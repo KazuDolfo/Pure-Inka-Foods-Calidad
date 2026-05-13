@@ -1,0 +1,98 @@
+@import '../../../styles/variables';
+
+.header-navbar {
+  background-color: $bg-main;
+  box-shadow: $shadow-sm;
+  padding: 1rem 0;
+  transition: all 0.3s ease;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid $border-color;
+}
+
+.logo-image {
+  height: 50px;
+  width: auto;
+  transition: transform 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.header-link {
+  color: $text-main;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  padding: 0.5rem 1rem !important;
+  border-radius: $radius-sm;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: $primary-green;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+  }
+
+  &:hover {
+    color: $primary-green;
+    &::after {
+      width: 70%;
+    }
+  }
+
+  &.active {
+    color: $primary-green;
+    font-weight: 600;
+    &::after {
+      width: 80%;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary-green;
+    outline-offset: 4px;
+  }
+}
+
+.navbar-toggler {
+  border: none;
+  padding: 0.5rem;
+  color: $primary-green;
+  
+  &:focus {
+    box-shadow: 0 0 0 3px $input-focus;
+  }
+}
+
+@media (max-width: $tablet) {
+  .navbar-collapse {
+    background: $bg-main;
+    padding: 1.5rem;
+    border-radius: 0 0 $radius-lg $radius-lg;
+    box-shadow: $shadow-md;
+    border: 1px solid $border-color;
+    margin-top: 1rem;
+  }
+
+  .header-link {
+    padding: 1rem !important;
+    border-bottom: 1px solid $bg-soft;
+    
+    &::after { display: none; }
+    
+    &.active {
+      background-color: $primary-green-light;
+      border-radius: $radius-md;
+    }
+  }
+}

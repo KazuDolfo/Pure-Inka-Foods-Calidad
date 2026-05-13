@@ -1,0 +1,13 @@
+<app-top-bar></app-top-bar>
+
+@if (!isAdminRoute) {
+  <header role="banner">
+    <app-header></app-header>
+  </header>
+}
+
+<main id="main-content" role="main" class="main-container">
+  <router-outlet></router-outlet>
+</main>
+
+<app-footer></app-footer>

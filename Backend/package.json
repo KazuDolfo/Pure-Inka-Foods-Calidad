@@ -1,0 +1,47 @@
+{
+  "name": "pureinka-backend",
+  "version": "1.0.0",
+  "description": "Backend API para Pure Inka Foods - Tienda de alimentos naturales",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "echo 'Backend is pure JS, no build needed. Preparing for production...'",
+    "prod": "NODE_ENV=production node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "angular",
+    "nodejs",
+    "express",
+    "mysql",
+    "ecommerce",
+    "natural-foods"
+  ],
+  "author": "Adolfo Cubas",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-async-handler": "^1.2.0",
+    "express-list-endpoints": "^7.1.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "mysql2": "^3.11.0",
+    "nodemailer": "^8.0.7",
+    "pdfkit": "^0.18.0",
+    "stripe": "^20.0.0"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.4",
+    "supertest": "^7.2.2"
+  }
+}

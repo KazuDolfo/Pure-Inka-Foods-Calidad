@@ -1,0 +1,135 @@
+<footer 
+  class="footer pt-5 pb-3"
+  role="contentinfo"
+  aria-label="Footer de Pure Inka Foods"
+>
+    <div class="container">
+        <div class="row">
+            
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <a 
+                  href="/" 
+                  class="d-block mb-3 text-decoration-none"
+                  aria-label="Ir a la página de inicio"
+                >
+                    <img 
+                      src="assets/pure-inka-logo.png" 
+                      alt="Pure Inka Foods Logo" 
+                      class="footer-logo"
+                    >
+                </a>
+                <p class="small text-muted mb-3">
+                  The purest and most powerful superfoods from the Andes and the Amazon.
+                </p>
+                <div class="social-links" role="group" aria-label="Redes sociales">
+                    <a 
+                      href="{{ contactInfo.social.facebook }}" 
+                      class="social-link me-3"
+                      aria-label="Visitar nuestra página de Facebook"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                        <i class="bi bi-facebook fs-5" aria-hidden="true"></i>
+                    </a>
+                    <a 
+                      href="{{ contactInfo.social.instagram }}" 
+                      class="social-link me-3"
+                      aria-label="Visitar nuestra página de Instagram"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                        <i class="bi bi-instagram fs-5" aria-hidden="true"></i>
+                    </a>
+                    <a 
+                      href="{{ contactInfo.social.twitter }}" 
+                      class="social-link me-3"
+                      aria-label="Visitar nuestro Twitter"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                        <i class="bi bi-twitter fs-5" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                <h5 class="fw-bold text-white mb-3">Shop</h5>
+                <ul class="list-unstyled small mb-0" role="list">
+                    <li class="mb-2">
+                        <a href="/shop" class="footer-link" aria-label="Ver todos los productos">
+                            All Products
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/shop?category=herbs" class="footer-link" aria-label="Ver hierbas y polvos">
+                            Herbs & Powders
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/shop?category=nuts" class="footer-link" aria-label="Ver frutos secos y semillas">
+                            Nuts & Seeds
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/shop?filter=new" class="footer-link" aria-label="Ver nuevos productos">
+                            New Arrivals
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                <h5 class="fw-bold text-white mb-3">Help</h5>
+                <ul class="list-unstyled small mb-0" role="list">
+                    <li class="mb-2">
+                        <a href="/shipping-returns" class="footer-link" aria-label="Información de envíos y devoluciones">
+                            Shipping & Returns
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/faq" class="footer-link" aria-label="Preguntas frecuentes">
+                            FAQ / Q&A
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/privacy-policy" class="footer-link" aria-label="Ver política de privacidad">
+                            Privacy Policy
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="/terms-conditions" class="footer-link" aria-label="Ver términos y condiciones">
+                            Terms & Conditions
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <h5 class="fw-bold text-white mb-3">Contact Us</h5>
+                <div class="mb-2">
+                    <a 
+                      href="mailto:{{ contactInfo.email }}" 
+                      class="footer-link d-flex align-items-center text-decoration-none"
+                      aria-label="Enviar correo electrónico a {{ contactInfo.email }}"
+                    >
+                        <i class="bi bi-envelope-fill me-2" aria-hidden="true"></i>
+                        <span>{{ contactInfo.email }}</span>
+                    </a>
+                </div>
+                <div class="mb-3">
+                    <a 
+                      href="tel:{{ contactInfo.phone }}" 
+                      class="footer-link d-flex align-items-center text-decoration-none"
+                      aria-label="Llamar al teléfono {{ contactInfo.phone }}"
+                    >
+                        <i class="bi bi-telephone-fill me-2" aria-hidden="true"></i>
+                        <span>{{ contactInfo.phone }}</span>
+                    </a>
+                </div>
+                <p class="small text-muted mb-0">
+                    © {{ currentYear }} Pure Inka Foods. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>

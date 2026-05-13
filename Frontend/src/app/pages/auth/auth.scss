@@ -1,0 +1,161 @@
+.auth-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-soft);
+  padding: 2rem 1rem;
+}
+
+.auth-main-container {
+  background: white;
+  border-radius: 2rem;
+  overflow: hidden;
+  width: 100%;
+  max-width: 1100px;
+  min-height: 700px;
+  display: flex;
+  flex-direction: column;
+
+  .row {
+    flex: 1;
+    margin: 0;
+    align-items: stretch;
+  }
+}
+
+.auth-image-side {
+  position: relative;
+  background-image: url('../../../assets/banner-palmeras.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(61, 139, 13, 0.8) 0%, rgba(26, 36, 20, 0.6) 100%);
+  }
+
+  .logo-content {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+  }
+
+  .auth-side-logo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
+  }
+}
+
+.auth-form-side {
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.auth-mobile-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--primary-green-light);
+}
+
+.form-control {
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  
+  &:focus {
+    background-color: #fff;
+    box-shadow: 0 0 0 0.25rem rgba(61, 139, 13, 0.15);
+    border-color: var(--primary-green);
+  }
+}
+
+.btn-lg {
+  border-radius: 0.75rem;
+}
+
+.auth-tabs {
+  .btn {
+    border-radius: 0.75rem;
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background-color: white;
+  width: 90%;
+  max-width: 450px;
+  margin: 0.5rem;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  z-index: 1040;
+  opacity: 0.5;
+}
+
+.modal-backdrop.fade {
+  opacity: 0;
+  transition: opacity 0.15s linear;
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 991.98px) {
+  .auth-page-wrapper {
+    padding: 1rem;
+  }
+  
+  .auth-main-container {
+    border-radius: 1.5rem;
+    min-height: auto;
+  }
+}

@@ -1,0 +1,169 @@
+<div 
+  class="top-bar bg-success py-2"
+  role="banner"
+  aria-label="Barra superior de navegación"
+>
+  <div class="container d-flex justify-content-between align-items-center flex-wrap">
+    
+    
+    <span class="small fw-bold text-uppercase d-none d-md-block text-white">
+      * FREE SHIPPING ON ALL ORDERS | N. AMERICA + EUROPE *
+    </span>
+
+    
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      
+      
+      @if (isDistributor()) {
+        <span 
+          class="text-white small fw-bold"
+          aria-label="Mensaje de estado de distribuidor"
+        >
+          Usted Es Distribuidor
+        </span>
+      }
+
+      
+      @if (!authService.isAuthenticated()) {
+        <a 
+          [routerLink]="['/auth']" 
+          class="text-white small text-decoration-none top-link"
+          aria-label="Iniciar sesión o registrarse"
+        >
+          LOGIN
+        </a>
+      }
+      
+      
+      @if (authService.isAuthenticated()) {
+        <a 
+          [routerLink]="['/user-profile']" 
+          class="btn btn-sm text-white px-2 user-icon-btn" 
+          title="Mi Cuenta"
+          aria-label="Ir a mi perfil de usuario"
+        >
+          <i class="bi bi-person-circle fs-5" aria-hidden="true"></i>
+        </a>
+      }
+
+      
+      @if (authService.isAdmin()) {
+        <button 
+          (click)="logout()"
+          class="btn btn-sm text-white px-2 user-icon-btn"
+          title="Cerrar sesión administrativa"
+          aria-label="Cerrar sesión administrativa"
+        >
+          <i class="bi bi-box-arrow-right fs-5" aria-hidden="true"></i>
+        </button>
+      }
+
+      
+      <div class="dropdown d-inline-block" [class.show]="showCartDropdown()">
+        <button 
+          class="btn btn-sm text-white ps-0 pe-2 position-relative cart-icon-btn" 
+          title="Carrito de compras"
+          aria-label="Abrir carrito de compras ({{ cartItemCount() }} items)"
+          (click)="toggleCartDropdown()"
+          type="button"
+        >
+          <i class="bi bi-cart fs-5" aria-hidden="true"></i>
+          @if (cartItemCount() > 0) {
+            <span 
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge"
+              aria-label="Número de items en el carrito: {{ cartItemCount() }}"
+            >
+              {{ cartItemCount() }}
+            </span>
+          }
+        </button>
+
+        
+        <div 
+          class="dropdown-menu dropdown-menu-end mini-cart shadow-lg border-0" 
+          [class.show]="showCartDropdown()"
+          role="region"
+          aria-label="Contenido del carrito de compras"
+        >
+          <div class="dropdown-header">
+            <span class="fw-bold"><i class="bi bi-bag-check me-2"></i>Tu Carrito ({{ cartItemCount() }})</span>
+            <button type="button" class="btn-close small" style="font-size: 0.6rem;" (click)="closeCartDropdown()" aria-label="Cerrar"></button>
+          </div>
+          
+          <div class="cart-items-container">
+            
+            @if (cartItemCount() === 0) {
+              <div class="text-center py-5">
+                <i class="bi bi-cart-x fs-1 text-muted d-block mb-3 opacity-50" aria-hidden="true"></i>
+                <p class="text-muted mb-0">Tu carrito está vacío</p>
+                <a [routerLink]="['/shop']" class="btn btn-sm btn-outline-success mt-3" (click)="closeCartDropdown()">Ir a la tienda</a>
+              </div>
+            }
+
+            
+            @for (item of aggregatedCartItems(); track item.id) {
+              <div class="cart-item" role="listitem">
+                <div class="product-img-wrapper">
+                  <img
+                    [src]="getImageUrl(item.image)"
+                    alt="{{ item.name }}"
+                    (error)="onImageError($event)"
+                  />
+                </div>
+                <div class="product-info">
+                  <span class="product-name" style="color: #2c3e50 !important; font-weight: 700;">{{ item.name }}</span>
+                  <div class="d-flex flex-column">
+                    <span class="product-price" style="color: #489C0F !important; font-weight: 700;">S/. {{ (item.price || 0).toFixed(2) }}</span>
+                    <span class="text-muted" style="font-size: 0.7rem; font-weight: 600;">
+                        Total: S/. {{ ((item.total || 0)).toFixed(2) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="controls-wrapper">
+                  <div class="quantity-controls">
+                      <button type="button" class="btn-quantity" (click)="decreaseQuantity(item.id); $event.stopPropagation()" aria-label="Disminuir"><i class="bi bi-dash"></i></button>
+                      <span class="quantity-display" style="color: #000000 !important; font-weight: 800; min-width: 15px; text-align: center;">{{ item.quantity }}</span>
+                      <button type="button" class="btn-quantity" (click)="increaseQuantity(item.id); $event.stopPropagation()" aria-label="Aumentar"><i class="bi bi-plus"></i></button>
+                  </div>
+                  <button 
+                      class="btn-remove" 
+                      (click)="removeItem(item.id); $event.stopPropagation()"
+                      title="Eliminar {{ item.name }}"
+                  >
+                      <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          
+          @if (cartItemCount() > 0) {
+            <div class="cart-footer">
+              <div class="total-row">
+                <span class="total-label" style="color: #6c757d !important;">Total Carrito</span>
+                <span class="total-amount" style="color: #489C0F !important; font-weight: 800;">S/. {{ cartTotal().toFixed(2) }}</span>
+              </div>
+              <a 
+                [routerLink]="['/checkout']" 
+                class="btn btn-success checkout-btn w-100"
+                (click)="closeCartDropdown()"
+              >
+                Finalizar Compra
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+
+@if (showCartDropdown()) {
+  <div 
+    class="dropdown-backdrop"
+    (click)="closeCartDropdown()"
+  ></div>
+}

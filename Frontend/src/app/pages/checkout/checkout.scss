@@ -1,0 +1,128 @@
+
+:host {
+    display: block;
+    --inkapt-primary: #2e7d32;
+    
+    --inkapt-dark: #1b5e20;
+    --inkapt-light: #e8f5e9;
+    --inkapt-accent: #66bb6a;
+}
+
+.text-inkapt-dark {
+    color: var(--inkapt-dark) !important;
+}
+
+.bg-light-custom {
+    background-color: #f8f9fa;
+}
+
+
+.checkout-steps .nav-link {
+    color: #6c757d;
+    background-color: transparent;
+    border-bottom: 3px solid #dee2e6;
+    border-radius: 0;
+    padding-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.checkout-steps .nav-link.active {
+    color: var(--inkapt-primary);
+    border-bottom-color: var(--inkapt-primary);
+}
+
+.checkout-steps .nav-link:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+.checkout-form-card {
+    border: none;
+    border-radius: 12px;
+}
+
+.sticky-summary {
+    position: sticky;
+    top: 2rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(to bottom right, #ffffff, #f1f8e9);
+}
+
+
+.payment-btn {
+    transition: all 0.2s ease-in-out;
+    border: 2px solid #dee2e6;
+    background-color: #fff;
+}
+
+.payment-btn:hover {
+    border-color: var(--inkapt-accent);
+    background-color: #f1f8e9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.payment-btn.active-payment {
+    border-color: var(--inkapt-primary);
+    background-color: var(--inkapt-light);
+    color: var(--inkapt-dark);
+    box-shadow: 0 0 0 1px var(--inkapt-primary);
+}
+
+.payment-icon {
+    height: 24px;
+    width: auto;
+    object-fit: contain;
+}
+
+
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--inkapt-accent);
+    box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+}
+
+.btn-success {
+    background-color: var(--inkapt-primary);
+    border-color: var(--inkapt-primary);
+}
+
+.btn-success:hover {
+    background-color: var(--inkapt-dark);
+    border-color: var(--inkapt-dark);
+}
+
+.btn-outline-success {
+    color: var(--inkapt-primary);
+    border-color: var(--inkapt-primary);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--inkapt-primary);
+    color: white;
+}
+
+
+.summary-totals .list-group-item {
+    background-color: transparent;
+    border-color: rgba(0, 0, 0, 0.05);
+}

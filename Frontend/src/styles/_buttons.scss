@@ -1,0 +1,33 @@
+@use 'variables' as v;
+
+.btn-primary {
+    background-color: v.$accent-orange !important;
+    border-color: v.$accent-orange !important;
+    color: white !important;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+
+    &:hover:not(:disabled) {
+        background-color: v.$accent-orange-dark !important;
+        border-color: v.$accent-orange-dark !important;
+        transform: translateY(-1px);
+    }
+
+    &:disabled {
+        opacity: 0.7;
+    }
+}
+
+.btn-outline-success {
+    border-color: v.$primary-green;
+    color: v.$primary-green;
+    font-weight: bold;
+    text-transform: uppercase;
+
+    &:hover {
+        background-color: v.$primary-green;
+        color: white;
+    }
+}

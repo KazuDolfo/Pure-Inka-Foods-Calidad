@@ -1,0 +1,78 @@
+<nav 
+  class="navbar navbar-expand-lg header-navbar" 
+  role="navigation" 
+  aria-label="Navegación principal"
+>
+  <div class="container">
+    
+    <button 
+      class="navbar-toggler" 
+      type="button" 
+      (click)="toggleMobileMenu()"
+      aria-label="Abrir menú de navegación"
+      [attr.aria-expanded]="isMobileMenuOpen()"
+      aria-controls="navbarMainContent"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    
+    <div class="navbar-brand py-0">
+      <a 
+        [routerLink]="[homeLink]" 
+        class="d-flex align-items-center text-decoration-none"
+        aria-label="Pure Inka Foods - Ir al inicio"
+      >
+        <img 
+          src="assets/pure-inka-logo.png" 
+          alt="" 
+          class="logo-image"
+          loading="eager"
+        >
+      </a>
+    </div>
+
+    
+    <div 
+      class="collapse navbar-collapse justify-content-end" 
+      id="navbarMainContent"
+      [class.show]="isMobileMenuOpen()"
+    >
+      <ul class="navbar-nav align-items-center">
+        <li class="nav-item">
+          <a 
+            [routerLink]="[homeLink]" 
+            routerLinkActive="active" 
+            [routerLinkActiveOptions]="{ exact: true }" 
+            (click)="closeMobileMenu()"
+            class="nav-link header-link"
+          >
+            Inicio
+          </a>
+        </li>
+        <li class="nav-item">
+          <a 
+            [routerLink]="['/shop']" 
+            routerLinkActive="active" 
+            (click)="closeMobileMenu()"
+            class="nav-link header-link"
+          >
+            Tienda
+          </a>
+        </li>
+        <li class="nav-item">
+          <a 
+            [routerLink]="['/about']" 
+            routerLinkActive="active" 
+            (click)="closeMobileMenu()"
+            class="nav-link header-link"
+          >
+            Nosotros
+          </a>
+        </li>
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>

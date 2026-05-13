@@ -1,0 +1,114 @@
+<div class="container my-5 py-3">
+  <app-page-header 
+    title="Nuestra Tienda" 
+    subtitle="Descubre nuestros superalimentos andinos y amazónicos">
+  </app-page-header>
+
+  
+  @if (getError()) {
+    <div class="alert alert-danger" role="alert">
+      <strong>Error al cargar productos:</strong> {{ getError() }}
+    </div>
+  }
+  @if (getErrorCategories()) {
+    <div class="alert alert-danger" role="alert">
+      <strong>Error al cargar categorías:</strong> {{ getErrorCategories() }}
+    </div>
+  }
+
+  
+  @if (getLoading() || getLoadingCategories()) {
+    <div class="text-center my-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando productos y categorías...</span>
+      </div>
+    </div>
+  }
+
+  @if (!getLoading() && !getError() && !getLoadingCategories()) {
+    <div class="row">
+      
+      <div class="col-lg-3 mb-4">
+        <div class="mb-4">
+          <label for="searchInput" class="form-label fw-bold">Buscar productos</label>
+          <div class="input-group">
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Ej: Maca, Quinua..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearchInput()"
+              [disabled]="getLoading()"
+            />
+            @if (searchTerm && !getLoading()) {
+              <button 
+                class="btn btn-outline-secondary" 
+                type="button" 
+                (click)="clearFilters()"
+              >
+                <i class="bi bi-x"></i>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div>
+          <h5 class="fw-bold mb-3">Categorías</h5>
+          <select
+            class="form-select"
+            [(ngModel)]="selectedCategoryId"
+            (change)="onCategoryChange($event)"
+            [disabled]="getLoading()"
+          >
+            <option value="">Todas las categorías</option>
+            @for (category of getCategories(); track category.idCategoria) {
+              <option [value]="category.idCategoria">
+                {{ category.nombre }}
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+
+      
+      <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="h5 fw-bold">
+            {{ getProducts().length }} producto(s) encontrado(s)
+          </h2>
+          @if (getLoading()) {
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          }
+        </div>
+
+        @if (getProducts().length === 0 && !getLoading()) {
+          <div class="text-center py-5">
+            <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+            <p class="lead text-muted">No se encontraron productos.</p>
+            @if (searchTerm || selectedCategoryId) {
+              <button 
+                class="btn btn-outline-primary" 
+                (click)="clearFilters()"
+              >
+                Limpiar filtros
+              </button>
+            }
+          </div>
+        }
+
+        @if (getProducts().length > 0) {
+          <div class="row g-4">
+            @for (product of getProducts(); track product.idProducto) {
+              <div class="col-md-4 col-sm-6">
+                <app-product-card [product]="product"></app-product-card>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

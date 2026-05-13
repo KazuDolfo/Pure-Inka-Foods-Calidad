@@ -1,0 +1,390 @@
+<div class="container my-5 py-3">
+
+    <header class="text-center mb-5">
+        <h1 class="display-6 fw-bolder text-inkapt-dark">Finalizar Compra</h1>
+        <p class="lead text-muted">Estás a punto de obtener tus superalimentos Inkapt.</p>
+    </header>
+
+    <div class="row g-4">
+        
+        <div class="col-lg-7">
+
+            <ul class="nav nav-pills nav-fill mb-4 checkout-steps">
+                <li class="nav-item">
+                    <button class="nav-link fw-bold" [class.active]="currentStep() === 1"
+                        [disabled]="currentStep() !== 1">1. Dirección</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold" [class.active]="currentStep() === 2"
+                        [disabled]="currentStep() < 2">2. Envío y Resumen</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold" [class.active]="currentStep() === 3"
+                        [disabled]="currentStep() < 3">3. Pago</button>
+                </li>
+            </ul>
+
+            <div class="card p-4 shadow-sm checkout-form-card">
+
+                
+                @if (currentStep() === 1) {
+                    <div>
+                        <h2 class="h4 fw-bold mb-4 text-inkapt-dark">1. Seleccionar Dirección de Envío</h2>
+
+                        @if (isLoading()) {
+                            <div class="text-center py-4">
+                                <span class="spinner-border text-primary"></span>
+                                <p class="mt-2">Cargando direcciones...</p>
+                            </div>
+                        }
+
+                        @if (checkoutError() && !isLoading()) {
+                            <div class="alert alert-danger">{{ checkoutError() }}</div>
+                        }
+
+
+                        @if (!isLoading() && direcciones().length === 0 && !showAddressForm()) {
+                            <div class="alert alert-warning text-center">
+                                <p class="mb-2">Ninguna dirección registrada. Por favor, agregue una para continuar.</p>
+                                <button type="button" class="btn btn-sm btn-success" (click)="showAddressForm.set(true)">
+                                    <i class="bi bi-plus-circle me-1"></i> Agregar Dirección
+                                </button>
+                            </div>
+                        }
+
+                        @if (!isLoading() && direcciones().length > 0 && !showAddressForm()) {
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <p class="text-muted mb-0 small">Selecciona una de tus direcciones guardadas:</p>
+                                    <button type="button" class="btn btn-sm btn-outline-success"
+                                        (click)="showAddressForm.set(true)">
+                                        <i class="bi bi-plus-circle me-1"></i> Nueva Dirección
+                                    </button>
+                                </div>
+
+                                <div class="list-group shadow-sm">
+                                    @for (dir of direcciones(); track dir.id_direccion) {
+                                        <label class="list-group-item list-group-item-action d-flex align-items-start p-3"
+                                            [class.active]="dir.id_direccion === selectedAddressId()">
+                                            <input class="form-check-input me-3 mt-1" type="radio" name="addressSelect"
+                                                [checked]="dir.id_direccion === selectedAddressId()"
+                                                (change)="selectAddress(dir.id_direccion)">
+                                            <div class="w-100">
+                                                <h6 class="mb-1 fw-bold">
+                                                    {{ dir.direccion }}
+                                                </h6>
+                                                <p class="mb-0 small" [class.text-white-50]="dir.id_direccion === selectedAddressId()" [class.text-muted]="dir.id_direccion !== selectedAddressId()">
+                                                    {{ dir.ciudad }}, {{ dir.pais }}
+                                                </p>
+                                                <p class="mb-0 small mt-1">
+                                                    <i class="bi bi-person me-1"></i> {{ dir.nombre_receptor }} | 
+                                                    <i class="bi bi-telephone me-1"></i> {{ dir.telefono_receptor }}
+                                                </p>
+                                            </div>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (showAddressForm()) {
+                            <div class="card card-body bg-light border-0 shadow-sm mb-4">
+                                <h5 class="card-title mb-4 fw-bold"><i class="bi bi-geo-alt me-2 text-success"></i>Nueva Dirección de Envío</h5>
+                                <form #addAddressForm="ngForm" (ngSubmit)="addAddress(addAddressForm)">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="nombre_receptor" class="form-label small fw-bold">¿Quién recibe? *</label>
+                                            <input type="text" id="nombre_receptor" name="nombre_receptor" class="form-control"
+                                                [(ngModel)]="addressForm.nombre_receptor" required
+                                                placeholder="Nombre completo">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="telefono_receptor" class="form-label small fw-bold">Teléfono de contacto *</label>
+                                            <input type="text" id="telefono_receptor" name="telefono_receptor"
+                                                class="form-control" [(ngModel)]="addressForm.telefono_receptor" required
+                                                placeholder="Ej. 987654321">
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="newAddress" class="form-label small fw-bold">Dirección Completa *</label>
+                                            <input type="text" id="newAddress" name="newAddress" class="form-control"
+                                                [(ngModel)]="addressForm.direccion" required
+                                                placeholder="Calle, número, departamento, referencia">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="newCity" class="form-label small fw-bold">Ciudad *</label>
+                                            <input type="text" id="newCity" name="newCity" class="form-control"
+                                                [(ngModel)]="addressForm.ciudad" required
+                                                placeholder="Ej. Lima, Arequipa">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="newDistrito" class="form-label small fw-bold">Distrito *</label>
+                                            <input type="text" id="newDistrito" name="newDistrito" class="form-control"
+                                                [(ngModel)]="addressForm.distrito" required
+                                                placeholder="Ej. Miraflores, San Isidro">
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="newReferencia" class="form-label small fw-bold">Referencia (Opcional)</label>
+                                            <input type="text" id="newReferencia" name="newReferencia" class="form-control"
+                                                [(ngModel)]="addressForm.referencia"
+                                                placeholder="Ej. Frente al parque, edificio azul">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="newCountry" class="form-label small fw-bold">País *</label>
+                                            <select id="newCountry" name="newCountry" class="form-select" [(ngModel)]="addressForm.pais" required>
+                                                <option value="Perú">Perú</option>
+                                                <option value="USA">Estados Unidos</option>
+                                                <option value="España">España</option>
+                                                <option value="México">México</option>
+                                                <option value="Chile">Chile</option>
+                                                <option value="Colombia">Colombia</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="newZipCode" class="form-label small fw-bold">Cód. Postal (Opcional)</label>
+                                            <input type="text" id="newZipCode" name="newZipCode" class="form-control"
+                                                [(ngModel)]="addressForm.codigo_postal" placeholder="Ej. 15001">
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <button type="button" class="btn btn-light fw-bold"
+                                            (click)="showAddressForm.set(false); checkoutError.set(null)">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" class="btn btn-success px-4 fw-bold shadow-sm"
+                                            [disabled]="!addAddressForm.valid || isProcessing()">
+                                            @if (isProcessing()) {
+                                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                            }
+                                            {{ isProcessing() ? 'Guardando...' : 'Guardar Dirección' }}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        }
+
+                        @if (!showAddressForm() && !isLoading()) {
+                            <div class="d-grid mt-4">
+                                <button type="button" class="btn btn-primary btn-lg fw-bold" (click)="nextStepAddress()"
+                                    [disabled]="!selectedAddressId()">
+                                    Continuar al Envío
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+
+                
+                @if (currentStep() === 2) {
+                    <div>
+                        <h2 class="h4 fw-bold mb-4 text-inkapt-dark">Opciones de Envío</h2>
+
+                        <div class="mb-4">
+                            <p class="fw-bold mb-3 text-dark">Selecciona el método de envío para {{ shippingData.city }}:</p>
+                            <div class="row g-3">
+                                @for (opt of filteredShippingOptions(); track opt.id) {
+                                    <div class="col-md-6">
+                                        <label class="list-group-item d-flex justify-content-between align-items-center p-3 border rounded-3 shadow-sm h-100"
+                                            [class.border-success]="selectedShipping() === (opt.costo || opt.cost)"
+                                            [class.bg-light-green]="selectedShipping() === (opt.costo || opt.cost)"
+                                            style="cursor: pointer; background-color: white;">
+                                            <div class="d-flex align-items-center">
+                                                <input type="radio" name="shipping" [value]="opt.costo || opt.cost"
+                                                    [checked]="selectedShipping() === (opt.costo || opt.cost)" (change)="onShippingChange($event, opt)"
+                                                    class="form-check-input me-3">
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold text-dark">{{ opt.nombre || opt.name }}</h6>
+                                                    <small class="text-muted d-block">{{ opt.desc || 'Entrega estándar' }}</small>
+                                                </div>
+                                            </div>
+                                            <span class="fw-bold text-success">S/. {{ (opt.costo || opt.cost || 0).toFixed(2) }}</span>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary" (click)="prevStep()">
+                                <i class="bi bi-arrow-left me-2"></i> Volver a Dirección
+                            </button>
+                            <button type="button" class="btn btn-primary fw-bold px-4" (click)="nextStepShipping()"
+                                [disabled]="selectedShipping() < 0">
+                                Continuar al Pago
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                
+                @if (currentStep() === 3) {
+                    <div>
+                        <h2 class="h4 fw-bold mb-4 text-inkapt-dark">Seleccionar Pago</h2>
+
+                        @if (checkoutError()) {
+                            <div class="alert alert-danger text-center fw-bold my-3 py-2">
+                                <i class="bi bi-x-octagon-fill me-2"></i>
+                                {{ checkoutError() }}
+                            </div>
+                        }
+
+                        @if (orderPlaced()) {
+                            <div class="alert alert-success text-center fw-bold my-5 py-3">
+                                <i class="bi bi-check-circle-fill fs-2 me-2"></i>
+                                <p class="h4 mt-2">¡Orden Procesada con Éxito!</p>
+                                <p class="mb-0">Gracias por tu compra. Pronto recibirás una confirmación por correo.</p>
+                            </div>
+                        }
+
+                        @if (!orderPlaced()) {
+                            <div>
+                                <div class="mb-4">
+                                    <h5 class="fw-bold mb-3">Selecciona tu Método de Pago:</h5>
+
+                                    <div class="row g-3">
+                                        @for (method of paymentMethods(); track (method.id_metodo || method.idMetodoPago)) {
+                                            <div class="col-md-6">
+                                                <button type="button"
+                                                    class="btn w-100 h-100 p-3 border rounded-3 text-start payment-btn"
+                                                    [class.active-payment]="paymentMethod() === method.nombre"
+                                                    (click)="onPaymentMethodChange(method.nombre)">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        @if (method.nombre.toLowerCase() === 'yape') {
+                                                            <img src="assets/yape-logo.png" alt="Yape" class="payment-icon me-2" style="width: 24px;">
+                                                        } @else if (method.nombre.toLowerCase() === 'plin') {
+                                                            <img src="assets/plin-logo.png" alt="Plin" class="payment-icon me-2" style="width: 24px;">
+                                                        } @else {
+                                                            <i class="bi fs-4 me-2 text-primary" [ngClass]="{
+                                                                'bi-credit-card': isCardMethod(method.nombre),
+                                                                'bi-bank': method.nombre.toLowerCase() === 'transferencia',
+                                                                'bi-paypal': method.nombre.toLowerCase() === 'paypal'
+                                                            }"></i>
+                                                        }
+                                                        <span class="fw-bold">{{ method.descripcion || method.nombre | titlecase }}</span>
+                                                    </div>
+                                                    <small class="text-muted d-block" *ngIf="isCardMethod(method.nombre)">Crédito o Débito (Visa, MC)</small>
+                                                    <small class="text-muted d-block" *ngIf="method.nombre.toLowerCase() === 'yape' || method.nombre.toLowerCase() === 'plin'">Pago rápido con QR</small>
+                                                    <small class="text-muted d-block" *ngIf="method.nombre.toLowerCase() === 'transferencia'">Depósito bancario directo</small>
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                
+                                @if (isCardMethod(paymentMethod())) {
+                                    <div class="card p-4 bg-light border-0 mb-4 animate-fade-in">
+                                        <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-shield-lock me-2"></i>Pago Seguro con
+                                            Tarjeta</h6>
+
+                                        
+                                        <div id="card-element" class="form-control p-3 mb-3">
+                                            
+                                        </div>
+
+                                        @if (stripeError()) {
+                                            <div class="alert alert-danger small mt-2">
+                                                {{ stripeError() }}
+                                            </div>
+                                        }
+                                        <small class="text-muted"><i class="bi bi-lock-fill"></i> Sus datos están
+                                            encriptados.</small>
+                                    </div>
+                                }
+
+                                
+                                @if (paymentMethod() && paymentMethod().toLowerCase() !== 'paypal' && !isCardMethod(paymentMethod())) {
+                                    <div class="card p-4 bg-light border-0 mb-4 animate-fade-in">
+                                        <h6 class="fw-bold text-primary mb-3">
+                                            <i class="bi bi-info-circle me-2"></i>Instrucciones de Pago
+                                        </h6>
+
+                                        @if (getSelectedPaymentMethod()?.imagen_qr) {
+                                            <div class="text-center mb-3">
+                                                <img [src]="'http://localhost:5000/uploads/products/' + getSelectedPaymentMethod()?.imagen_qr"
+                                                    alt="QR de Pago" class="img-fluid rounded shadow-sm border bg-white p-2"
+                                                    style="max-width: 200px;">
+                                                <p class="text-muted small mt-2 fw-bold">Escanea el código QR desde tu app</p>
+                                            </div>
+                                        }
+
+                                        <div class="alert alert-white border shadow-sm small mb-3">
+                                            <p class="mb-0" style="white-space: pre-line;">
+                                                {{ getSelectedPaymentMethod()?.instrucciones || 'Cargando instrucciones...' }}
+                                            </p>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="comprobante" class="form-label fw-bold small">Subir Comprobante
+                                                (Captura)</label>
+                                            <input type="file" class="form-control" id="comprobante"
+                                                (change)="onFileSelected($event)" accept="image/*">
+                                            <div class="form-text">Es necesario para validar tu pago rápidamente.</div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="d-flex justify-content-between mt-5">
+                                    <button type="button" class="btn btn-outline-secondary" (click)="prevStep()">
+                                        <i class="bi bi-arrow-left me-2"></i> Volver a Envío
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-lg fw-bold px-5 shadow-sm"
+                                        (click)="placeOrder()"
+                                        [disabled]="isProcessing() || !paymentMethod() || checkoutError()">
+                                        @if (isProcessing()) {
+                                            <span class="spinner-border spinner-border-sm me-2"
+                                                aria-hidden="true"></span>
+                                        }
+                                        {{ isProcessing() ? 'Procesando...' : 'Confirmar Pedido (S/. ' + (total() |
+                                        number:'1.2-2') + ')' }}
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        
+        <div class="col-lg-5">
+            <div class="card p-4 shadow-lg sticky-summary">
+                <h3 class="h4 fw-bold mb-4 text-inkapt-dark">Resumen del Pedido</h3>
+
+                <ul class="list-group list-group-flush mb-3">
+                    @for (item of cartItems(); track item.id) {
+                        <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                            <span class="text-muted">{{ item.name }} (x{{ item.quantity }})</span>
+                            <span class="fw-bold">S/. {{ (item.price * item.quantity) | number:'1.2-2' }}</span>
+                        </li>
+                    }
+                </ul>
+
+                <ul class="list-group list-group-flush summary-totals">
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span>Subtotal</span>
+                        <span class="fw-bold">S/. {{ subtotal() | number:'1.2-2' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 py-2">
+                        <span>Envío</span>
+                        <span class="fw-bold text-success">S/. {{ selectedShipping() | number:'1.2-2' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0 pt-3 pb-0 border-top mt-2">
+                        <span class="h5 fw-bolder text-inkapt-dark">Total</span>
+                        <span class="h5 fw-bolder text-inkapt-dark">S/. {{ total() | number:'1.2-2' }}</span>
+                    </li>
+                </ul>
+
+                @if (currentStep() > 1) {
+                    <div class="mt-4 p-3 bg-light rounded-3">
+                        <h6 class="fw-bold text-inkapt-dark">Enviando a:</h6>
+                        <p class="small mb-0 text-muted">{{ shippingData.fullName }}</p>
+                        <p class="small mb-0 text-muted">{{ shippingData.address }}, {{ shippingData.city }}</p>
+                        <p class="small mb-0 text-muted">{{ shippingData.country }} ({{ shippingData.zipCode }})</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,202 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Gestión de Pedidos</h2>
+            <p class="text-muted mb-0">Controla el estado y entrega de los pedidos de los clientes.</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" (click)="load()" [disabled]="loading">
+            <i class="bi bi-arrow-clockwise me-2" [class.spinner-border]="loading"></i>Actualizar Lista
+        </button>
+    </div>
+
+    
+    <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> {{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = null"></button>
+    </div>
+    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
+        <button type="button" class="btn-close" (click)="error = null"></button>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4 overflow-hidden">
+        <div class="card-body p-0">
+            <!-- Vista de Tabla (Desktop >= 992px) -->
+            <div class="table-responsive d-none d-lg-block">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-dark">
+                        <tr>
+                            <th class="ps-4">ID / Fecha</th>
+                            <th>Cliente</th>
+                            <th>Envío a</th>
+                            <th>Método / Pago</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th class="text-center">Archivos</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let o of orders">
+                            <td class="ps-4">
+                                <div class="fw-bold text-primary">#{{ o.idPedido || o.id_pedido }}</div>
+                                <div class="small text-muted">{{ (o.fecha || o.fecha_pedido) | date:'short' }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ o.cliente_nombre || o.usuario?.nombre || 'Desconocido' }}</div>
+                                <div class="small text-muted">{{ o.cliente_correo || o.usuario?.correo }}</div>
+                            </td>
+                            <td>
+                                <div class="small fw-bold">{{ o.envio_receptor }}</div>
+                                <div class="small text-truncate" style="max-width: 150px;" [title]="o.envio_direccion">{{ o.envio_direccion }}</div>
+                                <div class="small text-muted">{{ o.envio_distrito }}</div>
+                            </td>
+                            <td>
+                                <div class="badge bg-light text-dark border mb-1">{{ o.metodo_envio || 'Estándar' }}</div>
+                                <div class="small text-uppercase fw-bold text-secondary">{{ o.metodoPago || o.metodo_pago }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">S/. {{ (o.totalPagar || o.total) | number:'1.2-2' }}</div>
+                                <div class="small text-muted">{{ o.totalProductos }} items</div>
+                            </td>
+                            <td>
+                                <span class="status-badge" [ngClass]="'status-' + o.estado.toLowerCase()">
+                                    {{ o.estado | uppercase }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex flex-column gap-1 align-items-center">
+                                    <button *ngIf="o.comprobantePago || o.comprobante_pago" class="btn btn-xs btn-info text-white shadow-sm"
+                                        (click)="viewImage(o.comprobantePago || o.comprobante_pago)">
+                                        <i class="bi bi-image me-1"></i> Imagen
+                                    </button>
+                                    
+                                    <a *ngIf="o.boleta_url" [href]="'http://localhost:5000' + o.boleta_url" 
+                                       target="_blank" class="btn btn-xs btn-danger shadow-sm">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i> Boleta
+                                    </a>
+
+                                    <span *ngIf="!(o.comprobantePago || o.comprobante_pago) && !o.boleta_url" 
+                                          class="text-muted small italic">Sin archivos</span>
+                                </div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                    <button *ngIf="o.estado.toLowerCase() === 'pendiente'" class="btn btn-sm btn-success action-btn" 
+                                        (click)="updateStatus(o, 'pagado')">
+                                        Validar
+                                    </button>
+                                    <button *ngIf="o.estado.toLowerCase() === 'pagado'" class="btn btn-sm btn-primary action-btn" 
+                                        (click)="updateStatus(o, 'enviado')">
+                                        Despachar
+                                    </button>
+                                    <button *ngIf="o.estado.toLowerCase() === 'enviado'" class="btn btn-sm btn-info text-white action-btn" 
+                                        (click)="updateStatus(o, 'entregado')">
+                                        Entregar
+                                    </button>
+                                    <button *ngIf="['pendiente', 'pagado'].includes(o.estado.toLowerCase())" class="btn btn-sm btn-outline-danger" 
+                                        (click)="updateStatus(o, 'cancelado')">
+                                        Anular
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Vista de Tarjetas (Móvil < 992px) -->
+            <div class="d-lg-none p-3">
+                <div *ngFor="let o of orders" class="order-mobile-card border rounded-3 p-3 mb-3 shadow-sm bg-white">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <div class="fw-bold text-primary">Pedido #{{ o.idPedido || o.id_pedido }}</div>
+                            <div class="small text-muted">{{ (o.fecha || o.fecha_pedido) | date:'short' }}</div>
+                        </div>
+                        <span class="status-badge-sm" [ngClass]="'status-' + o.estado.toLowerCase()">
+                            {{ o.estado | uppercase }}
+                        </span>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="small text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.65rem;">Cliente</div>
+                        <div class="fw-bold small">{{ o.cliente_nombre || o.usuario?.nombre }}</div>
+                        <div class="small text-muted">{{ o.cliente_correo || o.usuario?.correo }}</div>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="small text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.65rem;">Dirección</div>
+                        <div class="small">{{ o.envio_direccion }}, {{ o.envio_distrito }}</div>
+                    </div>
+
+                    <div class="row mb-3 g-2">
+                        <div class="col-6">
+                            <div class="small text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.65rem;">Pago / Envío</div>
+                            <div class="small fw-bold">{{ o.metodoPago || o.metodo_pago }}</div>
+                            <div class="small text-muted">{{ o.metodo_envio || 'Estándar' }}</div>
+                        </div>
+                        <div class="col-6 text-end">
+                            <div class="small text-muted mb-1 text-uppercase fw-bold" style="font-size: 0.65rem;">Total</div>
+                            <div class="h5 fw-bolder mb-0 text-success">S/. {{ (o.totalPagar || o.total) | number:'1.2-2' }}</div>
+                            <div class="small text-muted">{{ o.totalProductos }} items</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                        <button *ngIf="o.comprobantePago || o.comprobante_pago" class="btn btn-sm btn-outline-info flex-grow-1"
+                            (click)="viewImage(o.comprobantePago || o.comprobante_pago)">
+                            <i class="bi bi-image"></i> Ver Pago
+                        </button>
+                        <a *ngIf="o.boleta_url" [href]="'http://localhost:5000' + o.boleta_url" 
+                           target="_blank" class="btn btn-sm btn-outline-danger flex-grow-1">
+                            <i class="bi bi-file-earmark-pdf"></i> Boleta
+                        </a>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-2">
+                        <button *ngIf="o.estado.toLowerCase() === 'pendiente'" class="btn btn-success" 
+                            (click)="updateStatus(o, 'pagado')">
+                            Validar Pago
+                        </button>
+                        <button *ngIf="o.estado.toLowerCase() === 'pagado'" class="btn btn-primary" 
+                            (click)="updateStatus(o, 'enviado')">
+                            Marcar como Enviado
+                        </button>
+                        <button *ngIf="o.estado.toLowerCase() === 'enviado'" class="btn btn-info text-white" 
+                            (click)="updateStatus(o, 'entregado')">
+                            Marcar como Entregado
+                        </button>
+                        <button *ngIf="['pendiente', 'pagado'].includes(o.estado.toLowerCase())" class="btn btn-outline-danger btn-sm" 
+                            (click)="updateStatus(o, 'cancelado')">
+                            Cancelar Pedido
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="orders.length === 0 && !loading" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                No hay pedidos registrados.
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal" tabindex="-1" [ngClass]="{'d-block animate-fade-in': selectedImage}" style="background-color: rgba(0,0,0,0.7); display: none;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white border-0">
+                    <h5 class="modal-title"><i class="bi bi-image me-2"></i>Comprobante de Pago</h5>
+                    <button type="button" class="btn-close btn-close-white" (click)="closeImageModal()"></button>
+                </div>
+                <div class="modal-body p-0 bg-secondary">
+                    <img [src]="selectedImage" class="img-fluid w-100" alt="Comprobante">
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary w-100" (click)="closeImageModal()">Cerrar Vista</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

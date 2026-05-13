@@ -1,0 +1,63 @@
+============================================================
+       GUÍA DE EJECUCIÓN - PURE INKA E-COMMERCE
+============================================================
+
+Este documento proporciona las instrucciones necesarias para configurar y 
+ejecutar el proyecto PURE INKA E-COMMERCE (Backend y Frontend).
+
+------------------------------------------------------------
+1. REQUISITOS PREVIOS
+------------------------------------------------------------
+Antes de comenzar, asegúrese de tener instalado lo siguiente:
+- Node.js (Versión recomendada: 18 o superior)
+  Descargar: https://nodejs.org/
+- MySQL Server (Versión 8.0 o superior)
+- MySQL Workbench u otro cliente SQL (Opcional, para ejecutar los scripts)
+
+------------------------------------------------------------
+2. CONFIGURACIÓN DE LA BASE DE DATOS
+------------------------------------------------------------
+1. Inicie su servidor MySQL.
+2. Ejecute los scripts SQL situados en la raíz del proyecto en el siguiente orden:
+   a. DDL-2.sql (Crea la base de datos 'PureInkaFoodsDB' y sus tablas).
+   b. DML-v1-InkaFood.sql (Inserta los datos iniciales y categorías).
+
+------------------------------------------------------------
+3. CONFIGURACIÓN DEL BACKEND
+------------------------------------------------------------
+1. Abra una terminal en la carpeta 'Backend'.
+2. Instale las dependencias:
+   npm install
+
+3. Configure las variables de entorno:
+   - Abra el archivo '.env' en la carpeta 'Backend'.
+   - Ajuste 'DB_USER' (usuario) y 'DB_PASS' (contraseña) según su configuración local de MySQL.
+   - Verifique que 'DB_NAME' sea 'PureInkaFoodsDB'.
+   - También revise 'Backend\src\config\db.js' para asegurar que los parámetros coincidan.
+
+4. Inicie el servidor:
+   npm run dev  (Para modo desarrollo con nodemon)
+   o
+   npm start    (Para ejecución normal)
+
+El servidor estará escuchando por defecto en: http://localhost:5000
+
+------------------------------------------------------------
+4. CONFIGURACIÓN DEL FRONTEND
+------------------------------------------------------------
+1. Abra una terminal en la carpeta 'Frontend'.
+2. Instale las dependencias:
+   npm install
+
+3. Inicie la aplicación Angular:
+   npm start
+
+4. Acceda a la aplicación en su navegador:
+   http://localhost:4200
+
+------------------------------------------------------------
+NOTAS ADICIONALES:
+- Si cambia el puerto del Backend en el .env, asegúrese de actualizar la URL 
+  en el Frontend para mantener la comunicación.
+- Para pruebas de pago, el sistema utiliza Stripe en modo test.
+============================================================

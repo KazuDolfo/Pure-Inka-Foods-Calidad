@@ -1,0 +1,30 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+
+# Angular/Frontend
+/Frontend/dist/
+/Frontend/.angular/
+/Frontend/node_modules/
+/Frontend/.editorconfig
+
+# Backend
+/Backend/node_modules/
+/Backend/.env
+/Backend/public/uploads/invoices/*.pdf
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+Thumbs.db
+Desktop.ini

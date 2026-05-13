@@ -1,0 +1,85 @@
+<div class="container my-5 py-3">
+  
+  <header class="text-center mb-5">
+    <h1 class="display-4 fw-bolder text-inkapt-dark">PURE INKA FOODS</h1>
+    <p class="lead text-muted">
+      Nature, health and well-being inspired by the richness of the Peruvian Andes and Amazon.
+    </p>
+  </header>
+
+  
+  <section class="mb-5 pb-4 border-bottom border-inkapt-gray">
+    <div class="row align-items-center">
+      <div class="col-lg-12">
+        <h2 class="h3 fw-bold text-inkapt-dark mb-3">Nuestra Misión</h2>
+        <p class="fs-5">
+          Brindar a las personas una mejor calidad de vida, alimentándolas con alimentos limpios y puros cultivados en el rico suelo de los Andes y la Amazonía, libres de químicos, pesticidas y semillas genéticamente modificadas, al mismo tiempo que permitimos que los agricultores y las comunidades locales prosperen, ofreciéndoles un medio de vida y una vida mejor.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="mb-5 pb-4 border-bottom border-inkapt-gray">
+    <div class="row">
+      <div class="col-lg-12">
+        <h2 class="h3 fw-bold text-inkapt-dark mb-3">Nuestro Objetivo</h2>
+        <p class="fs-5">
+          Garantizamos el suministro de productos naturales, como hierbas, plantas, semillas, granos y polvos, con altos estándares de pureza y calidad. Desde la selección de la materia prima hasta su almacenamiento, manipulación, envasado y entrega, nos esforzamos al máximo para garantizarle productos frescos de alta calidad con el mejor servicio de nuestro equipo.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="mb-5 pb-4 border-bottom border-inkapt-gray">
+    <h2 class="h3 fw-bold text-inkapt-dark mb-4 text-center">Nuestros Valores</h2>
+    <div class="row g-3">
+      <div class="col-md-6 col-lg-3">
+        <div class="card p-3 border-0 shadow-sm h-100">
+          <i class="bi bi-geo-alt fs-3 text-success mb-2"></i>
+          <h4 class="h6 fw-bold">Origen Auténtico</h4>
+          <p class="small text-muted">Solo ingredientes de áreas geográficas protegidas.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card p-3 border-0 shadow-sm h-100">
+          <i class="bi bi-hand-thumbs-up fs-3 text-success mb-2"></i>
+          <h4 class="h6 fw-bold">Comercio Justo</h4>
+          <p class="small text-muted">Pagos equitativos y desarrollo para las comunidades.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card p-3 border-0 shadow-sm h-100">
+          <i class="bi bi-recycle fs-3 text-success mb-2"></i>
+          <h4 class="h6 fw-bold">Sostenibilidad</h4>
+          <p class="small text-muted">Prácticas agrícolas que cuidan la tierra andina.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="card p-3 border-0 shadow-sm h-100">
+          <i class="bi bi-heart fs-3 text-success mb-2"></i>
+          <h4 class="h6 fw-bold">Calidad Pura</h4>
+          <p class="small text-muted">Productos 100% naturales, sin aditivos ni rellenos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="py-5">
+    <h2 class="h3 fw-bold text-center text-inkapt-dark mb-5">Hitos Clave</h2>
+    <div class="timeline-container">
+      <div class="timeline-line"></div>
+      <div class="timeline-item" *ngFor="let item of milestones; let i = index">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content card p-4 shadow-sm">
+          <h5 class="fw-bold text-success">{{ item.year }}</h5>
+          <p class="mb-0">{{ item.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+</div>

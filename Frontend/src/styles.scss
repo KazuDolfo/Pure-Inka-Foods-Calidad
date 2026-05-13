@@ -1,0 +1,60 @@
+
+
+@use 'styles/variables' as v;
+@use 'styles/typography' as t;
+@use 'styles/buttons' as b;
+@use 'styles/components' as c;
+
+:root {
+  --primary-green: #{v.$primary-green};
+  --primary-green-dark: #{v.$primary-green-dark};
+  --primary-green-light: #{v.$primary-green-light};
+  --accent-orange: #{v.$accent-orange};
+  --text-main: #{v.$text-main};
+  --text-muted: #{v.$text-muted};
+  --bg-main: #{v.$bg-main};
+  --bg-soft: #{v.$bg-soft};
+  --surface: #{v.$surface};
+  --border-color: #{v.$border-color};
+}
+
+body {
+    font-family: v.$font-family;
+    color: var(--text-main);
+    background-color: var(--bg-soft);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+.bg-light-green {
+    background-color: var(--bg-soft);
+}
+
+.text-success {
+    color: var(--primary-green) !important;
+}
+
+.bg-success {
+    background-color: var(--primary-green) !important;
+}
+
+.btn-success {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: #fff;
+    &:hover {
+        background-color: var(--primary-green-dark);
+        border-color: var(--primary-green-dark);
+    }
+}
+
+.btn-outline-success {
+    color: var(--primary-green);
+    border-color: var(--primary-green);
+    &:hover {
+        background-color: var(--primary-green);
+        color: #fff;
+    }
+}
+

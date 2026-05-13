@@ -1,0 +1,139 @@
+<div class="container-fluid py-4">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+        <div class="d-flex gap-2">
+            <select class="form-select form-select-sm shadow-sm" style="width: auto;" 
+                    [(ngModel)]="selectedPeriod" (change)="onPeriodChange()">
+                <option [value]="7">Últimos 7 días</option>
+                <option [value]="30">Últimos 30 días</option>
+                <option [value]="90">Últimos 90 días</option>
+            </select>
+            <button class="btn btn-sm btn-primary shadow-sm" (click)="loadStats()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Actualizar
+            </button>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+
+    <div *ngIf="stats && !loading">
+        <div class="row">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-primary text-uppercase mb-1">Ingresos Totales</div>
+                                <div class="h5 mb-0 fw-bold text-gray-800">S/. {{ stats.totalRevenue | number:'1.2-2'
+                                    }}</div>
+                            </div>
+                            <div class="col-auto"><i class="bi bi-cash-coin fs-2 text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-warning text-uppercase mb-1">Pedidos Pendientes</div>
+                                <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.pendingOrders }}</div>
+                            </div>
+                            <div class="col-auto"><i class="bi bi-clock fs-2 text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">Productos</div>
+                                <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.totalProducts }}</div>
+                            </div>
+                            <div class="col-auto"><i class="bi bi-box-seam fs-2 text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-success text-uppercase mb-1">Usuarios</div>
+                                <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.totalUsers }}</div>
+                            </div>
+                            <div class="col-auto"><i class="bi bi-people fs-2 text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-8 col-lg-7">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Evolución de Ventas</h6></div>
+                    <div class="card-body">
+                        <div class="chart-area">
+                            <canvas baseChart [data]="salesChartData" [options]="salesChartOptions"
+                                [type]="salesChartType"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Estado de Pedidos</h6></div>
+                    <div class="card-body">
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas baseChart [data]="statusChartData" [options]="statusChartOptions"
+                                [type]="statusChartType"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Top 5 Productos Vendidos</h6></div>
+                    <div class="card-body">
+                        <div class="chart-area">
+                            <canvas baseChart [data]="topProductsChartData" [options]="topProductsChartOptions"
+                                [type]="topProductsChartType"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Ventas por Categoría</h6></div>
+                    <div class="card-body">
+                        <div class="chart-pie pt-4 pb-2">
+                            <canvas baseChart [data]="categoryChartData" [options]="categoryChartOptions"
+                                [type]="categoryChartType"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

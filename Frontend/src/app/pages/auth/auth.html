@@ -1,0 +1,193 @@
+<div class="auth-page-wrapper">
+    <div class="auth-main-container shadow-lg">
+        <div class="row g-0">
+            <!-- Columna Izquierda: Imagen y Logo (Solo Desktop) -->
+            <div class="col-lg-6 d-none d-lg-flex auth-image-side">
+                <div class="overlay"></div>
+                <div class="logo-content text-center">
+                    <img src="assets/pure-inka-logo.png" alt="Pure Inka Logo" class="auth-side-logo mb-3">
+                    <h2 class="text-white fw-bold">Pure Inka</h2>
+                    <p class="text-white-50">Naturalmente Puro</p>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Formularios -->
+            <div class="col-lg-6 auth-form-side p-4 p-md-5">
+                <div class="mobile-logo d-lg-none text-center mb-4">
+                    <img src="assets/pure-inka-logo.png" alt="Pure Inka Logo" class="auth-mobile-logo">
+                    <h2 class="text-inkapt-dark fw-bold mt-2">Pure Inka</h2>
+                </div>
+
+                <header class="text-center mb-4">
+                    <h1 class="h3 fw-bold text-inkapt-dark">
+                        {{ currentView() === 'login' ? 'Bienvenido de Vuelta' : 'Crea tu Cuenta' }}
+                    </h1>
+                    <p class="text-muted">Accede a tu historial de pedidos y beneficios exclusivos.</p>
+                </header>
+
+                <!-- Mensaje de Alerta -->
+                <div *ngIf="authMessage" class="alert text-center fw-bold mb-4"
+                     [class.alert-success]="messageType === 'success'"
+                     [class.alert-danger]="messageType === 'error'">
+                    {{ authMessage }}
+                </div>
+
+                <!-- Tabs de Navegación -->
+                <div class="d-flex mb-4 auth-tabs">
+                    <button class="btn flex-fill text-uppercase fw-bold"
+                            [class.btn-success]="currentView() === 'login'"
+                            [class.btn-outline-success]="currentView() !== 'login'"
+                            (click)="switchView('login')">
+                        Iniciar Sesión
+                    </button>
+                    <button class="btn flex-fill text-uppercase fw-bold ms-2"
+                            [class.btn-success]="currentView() === 'register'"
+                            [class.btn-outline-success]="currentView() !== 'register'"
+                            (click)="switchView('register')">
+                        Registrarse
+                    </button>
+                </div>
+
+                <!-- Formulario de Login -->
+                <form (ngSubmit)="signIn()" *ngIf="currentView() === 'login'" #loginForm="ngForm">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Correo Electrónico *</label>
+                        <input type="email" id="loginEmail" name="loginEmail" class="form-control"
+                               [(ngModel)]="loginData.email" required placeholder="ejemplo@correo.com">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="loginPassword" class="form-label">Contraseña *</label>
+                        <input type="password" id="loginPassword" name="loginPassword" class="form-control"
+                               [(ngModel)]="loginData.password" required placeholder="••••••••">
+                    </div>
+                    
+                    <div class="d-grid gap-3">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold py-3" [disabled]="!loginForm.valid || isSubmitting">
+                            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                            {{ isSubmitting ? 'Verificando...' : 'Acceder' }}
+                        </button>
+                        
+                        <div class="text-center">
+                            <button type="button" class="btn btn-link text-decoration-none small text-muted" 
+                                    (click)="openAdminModal()">
+                                ¿Eres administrador? Inicia sesión aquí
+                            </button>
+                            <br>
+                            <a routerLink="/auth/forgot-password" class="text-center small text-muted">¿Olvidaste tu Contraseña?</a>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Formulario de Registro -->
+                <form (ngSubmit)="signUp()" *ngIf="currentView() === 'register'" #registerForm="ngForm">
+                    <div class="mb-3">
+                        <label for="registerName" class="form-label">Nombre *</label>
+                        <input type="text" id="registerName" name="registerName" class="form-control"
+                               [(ngModel)]="registerData.name" required placeholder="Tu nombre completo">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="registerEmail" class="form-label">Correo Electrónico *</label>
+                        <input type="email" id="registerEmail" name="registerEmail" class="form-control"
+                               [(ngModel)]="registerData.email" required placeholder="ejemplo@correo.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="registerPhone" class="form-label">Teléfono *</label>
+                        <input type="tel" id="registerPhone" name="registerPhone" class="form-control"
+                               [(ngModel)]="registerData.phone" required placeholder="Ej: 987654321">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="registerPassword" class="form-label">Contraseña *</label>
+                            <input type="password" id="registerPassword" name="registerPassword" class="form-control"
+                                   [(ngModel)]="registerData.password" required minlength="6" placeholder="••••••••">
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
+                                   [(ngModel)]="registerData.confirmPassword" required placeholder="••••••••">
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold py-3" [disabled]="!registerForm.valid || isSubmitting">
+                            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                            {{ isSubmitting ? 'Registrando...' : 'Crear Cuenta' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Admin -->
+<div class="modal fade" 
+     id="adminModal" 
+     tabindex="-1" 
+     aria-hidden="true"
+     [class.show]="showAdminModal()"
+     style="display: {{ showAdminModal() ? 'block' : 'none' }};"
+     (click)="closeAdminModal()">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 pe-4 pt-4">
+                <button type="button" class="btn-close" (click)="closeAdminModal()"></button>
+            </div>
+            <div class="modal-body p-4 p-md-5 pt-0">
+                <div class="text-center mb-4">
+                    <img src="assets/pure-inka-logo.png" alt="Logo" style="height: 60px;">
+                    <h5 class="modal-title fw-bold mt-3">Acceso Administrativo</h5>
+                </div>
+                
+                <div *ngIf="adminAuthMessage" class="alert text-center fw-bold mb-4"
+                     [class.alert-success]="adminMessageType === 'success'"
+                     [class.alert-danger]="adminMessageType === 'error'">
+                    {{ adminAuthMessage }}
+                </div>
+                
+                <form (ngSubmit)="signInAdmin()" #adminLoginForm="ngForm">
+                    <div class="mb-3">
+                        <label for="adminEmail" class="form-label text-muted small fw-bold text-uppercase">Correo Electrónico</label>
+                        <input type="email" 
+                               id="adminEmail" 
+                               name="adminEmail" 
+                               class="form-control bg-light border-0 py-2 px-3"
+                               [(ngModel)]="adminLoginData.email" 
+                               required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="adminPassword" class="form-label text-muted small fw-bold text-uppercase">Contraseña</label>
+                        <input type="password" 
+                               id="adminPassword" 
+                               name="adminPassword" 
+                               class="form-control bg-light border-0 py-2 px-3"
+                               [(ngModel)]="adminLoginData.password" 
+                               required>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" 
+                                class="btn btn-primary btn-lg fw-bold py-3" 
+                                [disabled]="!adminLoginData.email || !adminLoginData.password || isSubmittingAdmin">
+                            <span *ngIf="isSubmittingAdmin" 
+                                  class="spinner-border spinner-border-sm me-2" 
+                                  aria-hidden="true"></span>
+                            {{ isSubmittingAdmin ? 'Verificando...' : 'Acceder' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop fade" 
+     [class.show]="showAdminModal()"
+     *ngIf="showAdminModal()"
+     style="display: {{ showAdminModal() ? 'block' : 'none' }};"></div>

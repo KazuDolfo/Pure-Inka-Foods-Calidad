@@ -1,0 +1,173 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>Gestión de Productos</h2>
+    <div>
+      <button class="btn btn-primary me-2" (click)="showAddProductModal.set(true)">Nuevo Producto</button>
+      <button class="btn btn-secondary" (click)="showAddCategoryModal.set(true)">Añadir Categoría</button>
+    </div>
+  </div>
+  <p class="text-muted">Aquí puedes añadir, editar y eliminar productos y categorías.</p>
+
+  <div *ngIf="successMessage()" class="alert alert-success mt-3">{{ successMessage() }}</div>
+  <div *ngIf="errorMessage()" class="alert alert-danger mt-3">{{ errorMessage() }}</div>
+
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 mt-4">
+    <div *ngFor="let product of productService.getProducts()" class="col">
+      <div class="card h-100 shadow-sm">
+        <img [src]="product.image || 'assets/pure-inka-logo.png'" class="card-img-top product-img" alt="{{ product.nombre }}">
+        <div class="card-body">
+          <h5 class="card-title">{{ product.nombre }}</h5>
+          <p class="card-text text-truncate">{{ product.descripcion }}</p>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group">
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="onEditProduct(product)">
+                <i class="bi bi-pencil"></i> Editar
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="onDeleteProduct(product.idProducto)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+            <span class="fw-bold">S/. {{ (product.precio || 0).toFixed(2) }}</span>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">Stock: 
+              <span *ngIf="editingStock !== product.idProducto" (dblclick)="editingStock = product.idProducto" class="badge bg-light text-dark border cursor-pointer">
+                {{ product.stock }}
+              </span>
+              <input *ngIf="editingStock === product.idProducto" type="number" [value]="product.stock" 
+                     (keyup.enter)="onUpdateStock(product, $event)" 
+                     (blur)="editingStock = null"
+                     class="form-control form-control-sm d-inline-block w-50">
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal fade show" tabindex="-1" [ngClass]="{'d-block': showAddProductModal()}" *ngIf="showAddProductModal()">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Añadir Nuevo Producto</h5>
+          <button type="button" class="btn-close" (click)="showAddProductModal.set(false)"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="productForm" (ngSubmit)="onAddProduct()">
+            <div class="mb-3">
+              <label for="productName" class="form-label">Nombre del Producto</label>
+              <input type="text" id="productName" class="form-control" formControlName="nombre">
+            </div>
+            <div class="mb-3">
+              <label for="productDescription" class="form-label">Descripción</label>
+              <textarea id="productDescription" class="form-control" formControlName="descripcion" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="productCategory" class="form-label">Categoría</label>
+              <select id="productCategory" class="form-select" formControlName="id_categoria">
+                <option value="">Seleccionar categoría</option>
+                <option *ngFor="let cat of productService.getCategories()" [value]="cat.idCategoria || cat.id_categoria">
+                  {{ cat.nombre || cat.nombre_categoria }}
+                </option>
+              </select>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="productPrice" class="form-label">Precio Unitario</label>
+                <input type="number" id="productPrice" class="form-control" formControlName="precio_unitario" step="0.01">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="productStock" class="form-label">Stock Inicial</label>
+                <input type="number" id="productStock" class="form-control" formControlName="stock">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="productImage" class="form-label">Imagen del Producto</label>
+              <input type="file" id="productImage" class="form-control" (change)="onFileSelected($event)" accept="image/*">
+            </div>
+            <div class="modal-footer px-0 pb-0">
+              <button type="button" class="btn btn-secondary" (click)="showAddProductModal.set(false)">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid">Guardar Producto</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal fade show" tabindex="-1" [ngClass]="{'d-block': showAddCategoryModal()}" *ngIf="showAddCategoryModal()">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Añadir Nueva Categoría</h5>
+          <button type="button" class="btn-close" (click)="showAddCategoryModal.set(false)"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="categoryForm" (ngSubmit)="onAddCategory()">
+            <div class="mb-3">
+              <label for="categoryName" class="form-label">Nombre de la Categoría</label>
+              <input type="text" id="categoryName" class="form-control" formControlName="nombre">
+            </div>
+            <div class="mb-3">
+              <label for="categoryDescription" class="form-label">Descripción</label>
+              <textarea id="categoryDescription" class="form-control" formControlName="descripcion" rows="3"></textarea>
+            </div>
+            <div class="modal-footer px-0 pb-0">
+              <button type="button" class="btn btn-secondary" (click)="showAddCategoryModal.set(false)">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid">Guardar Categoría</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal fade show" tabindex="-1" [ngClass]="{'d-block': selectedProduct()}" *ngIf="selectedProduct()">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar Producto</h5>
+          <button type="button" class="btn-close" (click)="selectedProduct.set(null)"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="editProductForm" (ngSubmit)="onUpdateProduct()">
+            <div class="mb-3">
+              <label for="editProductName" class="form-label">Nombre del Producto</label>
+              <input type="text" id="editProductName" class="form-control" formControlName="nombre">
+            </div>
+            <div class="mb-3">
+              <label for="editProductDescription" class="form-label">Descripción</label>
+              <textarea id="editProductDescription" class="form-control" formControlName="descripcion" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="editProductCategory" class="form-label">Categoría</label>
+              <select id="editProductCategory" class="form-select" formControlName="id_categoria">
+                <option *ngFor="let cat of productService.getCategories()" [value]="cat.idCategoria || cat.id_categoria">
+                  {{ cat.nombre || cat.nombre_categoria }}
+                </option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="editProductPrice" class="form-label">Precio Unitario</label>
+              <input type="number" id="editProductPrice" class="form-control" formControlName="precio_unitario" step="0.01">
+            </div>
+            <div class="mb-3">
+              <label for="editProductImage" class="form-label">Imagen del Producto (Dejar vacío para mantener actual)</label>
+              <input type="file" id="editProductImage" class="form-control" (change)="onEditFileSelected($event)" accept="image/*">
+            </div>
+            <div class="modal-footer px-0 pb-0">
+              <button type="button" class="btn btn-secondary" (click)="selectedProduct.set(null)">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="editProductForm.invalid">Actualizar Producto</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal-backdrop fade show" *ngIf="showAddProductModal() || showAddCategoryModal() || selectedProduct()"></div>
+</div>

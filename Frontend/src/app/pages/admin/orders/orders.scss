@@ -1,0 +1,67 @@
+.status-badge, .status-badge-sm {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 50rem;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.status-badge {
+    min-width: 100px;
+}
+
+.status-badge-sm {
+    padding: 0.2rem 0.6rem;
+    font-size: 0.65rem;
+}
+
+.status-pendiente { background-color: #fff4e5; color: #b7791f; border: 1px solid #fbd38d; }
+.status-pagado { background-color: #e6fffa; color: #2c7a7b; border: 1px solid #81e6d9; }
+.status-enviado { background-color: #ebf8ff; color: #2b6cb0; border: 1px solid #90cdf4; }
+.status-entregado { background-color: #f0fff4; color: #2f855a; border: 1px solid #9ae6b4; }
+.status-cancelado { background-color: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+
+.action-btn {
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+}
+
+.btn-xs {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.65rem;
+    border-radius: 0.25rem;
+}
+
+.order-mobile-card {
+    transition: transform 0.2s;
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ajustes para tabla en desktop */
+.table th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 800;
+}
+
+.table td {
+    font-size: 0.85rem;
+}

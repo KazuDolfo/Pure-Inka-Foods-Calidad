@@ -1,0 +1,50 @@
+
+<section class="home-banner position-relative text-center py-5">
+  <div class="banner-overlay"></div>
+  <div class="container py-5 position-relative z-1">
+    <h1 class="display-5 fw-bolder text-white mb-3">
+      Cosechado con Integridad, Procesado con Pureza.
+    </h1>
+    <p class="lead text-white-50">Descubre superalimentos andinos y amazónicos, puros y potentes.</p>
+  </div>
+</section>
+
+<section class="container my-5 py-4">
+  <h2 class="page-title text-center mb-5">Nuestros Productos</h2>
+
+  @if (loading) {
+    <div class="text-center">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-warning text-center" role="alert">
+      {{ error }}
+    </div>
+  }
+
+  @if (!loading && !error && featuredProducts.length > 0) {
+    <div class="row g-4 justify-content-center">
+      @for (product of featuredProducts; track product.id) {
+        <div class="col-lg-3 col-md-4 col-sm-6">
+          <app-product-card [product]="product"></app-product-card>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!loading && !error && featuredProducts.length === 0) {
+    <div class="text-center py-3">
+      <p>No hay productos disponibles.</p>
+    </div>
+  }
+
+  <div class="text-center mt-5">
+    <a [routerLink]="['/shop']" class="btn btn-outline-success fw-bold text-uppercase px-5 py-2">
+      Ver más
+    </a>
+  </div>
+</section>

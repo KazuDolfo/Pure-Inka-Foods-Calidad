@@ -1,0 +1,52 @@
+@use 'variables' as v;
+
+.info-card {
+    background-color: v.$bg-soft;
+    border: 1px solid v.$border-color;
+    border-radius: v.$radius-md;
+    border-left: 4px solid v.$primary-green;
+    padding: 1.5rem;
+    box-shadow: v.$shadow-sm;
+    transition: box-shadow 0.3s;
+
+    &:hover {
+        box-shadow: v.$shadow-md;
+    }
+
+    .info-card-icon {
+        color: v.$primary-green;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.form-card {
+    border: 1px solid v.$border-color;
+    border-radius: v.$radius-lg;
+    padding: 2rem;
+    box-shadow: v.$shadow-md;
+}
+
+.form-control {
+    &:focus {
+        border-color: v.$primary-green;
+        box-shadow: 0 0 0 0.25rem v.$input-focus;
+    }
+}
+
+
+.home-banner {
+    background-image: url('/assets/banner-palmeras.jpg');
+    background-size: cover;
+    background-position: center center;
+}
+
+.banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); 
+    z-index: 0;
+}

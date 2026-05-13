@@ -1,0 +1,53 @@
+<article class="product-card" [attr.aria-label]="product.name" [class.out-of-stock]="isOutOfStock">
+  
+  <div class="product-image-wrapper">
+    <img
+      [src]="getImageUrl()"
+      [alt]="'Imagen de ' + product.name"
+      class="product-image"
+      (error)="onImageError($event)"
+      loading="lazy"
+    />
+
+    @if (isOutOfStock) {
+      <span class="badge-stock out-of-stock-badge">Agotado</span>
+    } @else if (isLowStock) {
+      <span class="badge-stock low-stock-badge">¡Casi agotado!</span>
+    }
+  </div>
+
+  
+  <div class="card-content">
+    <h3 class="product-title" [title]="product.name">
+      {{ product.name }}
+    </h3>
+
+    <p class="product-description-preview">
+      {{ product.description || 'Delicioso producto artesanal de Pure Inka.' }}
+    </p>
+
+    <div class="mt-auto">
+      <div class="product-price">
+        {{ formattedPrice() }}
+      </div>
+
+      <button
+        (click)="onAddToCart()"
+        class="btn-add-cart"
+        [disabled]="isAdded || isOutOfStock"
+        [attr.aria-label]="isOutOfStock ? 'Producto agotado' : (isAdded ? 'Producto añadido al carrito' : 'Añadir ' + product.name + ' al carrito')"
+      >
+        @if (isOutOfStock) {
+          <i class="bi bi-x-circle"></i>
+          <span>Agotado</span>
+        } @else if (isAdded) {
+          <i class="bi bi-check-circle-fill"></i>
+          <span>¡Añadido!</span>
+        } @else {
+          <i class="bi bi-cart-plus"></i>
+          <span>Añadir</span>
+        }
+      </button>
+    </div>
+  </div>
+</article>

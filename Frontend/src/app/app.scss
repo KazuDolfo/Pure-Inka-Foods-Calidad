@@ -1,0 +1,29 @@
+
+
+
+router-outlet + * {
+  display: block; 
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+
+.route-transition-enter {
+  opacity: 0;
+}
+
+.route-transition-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
+.route-transition-leave {
+  opacity: 1;
+}
+
+.route-transition-leave-active {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}

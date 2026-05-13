@@ -1,0 +1,221 @@
+
+<div class="user-profile-container">
+
+  
+  <div class="profile-header">
+    <h1>Mi Cuenta</h1>
+    <p>Gestiona tu información personal, pedidos y direcciones.</p>
+  </div>
+
+  
+  <div class="profile-nav">
+    <button (click)="setActiveTab('profile')" [class.active]="activeTab === 'profile'">
+      <i class="bi bi-person-circle"></i> Perfil
+    </button>
+    <button (click)="setActiveTab('orders')" [class.active]="activeTab === 'orders'">
+      <i class="bi bi-box-seam"></i> Mis Pedidos
+    </button>
+    <button (click)="setActiveTab('addresses')" [class.active]="activeTab === 'addresses'">
+      <i class="bi bi-geo-alt"></i> Direcciones
+    </button>
+    <button (click)="logout()" class="logout-btn">
+      <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+    </button>
+  </div>
+
+  
+  <div class="profile-content">
+
+    
+    <div *ngIf="activeTab === 'profile'" class="tab-pane">
+      <div class="profile-details-form">
+        <div class="form-group">
+          <label for="fullName">Nombre Completo</label>
+          <input type="text" id="fullName" class="form-control" [(ngModel)]="userData.fullName" [disabled]="!isEditing">
+        </div>
+        <div class="form-group">
+          <label for="email">Correo Electrónico</label>
+          <input type="email" id="email" class="form-control" [(ngModel)]="userData.email" disabled>
+        </div>
+        <div class="form-group">
+          <label for="phone">Teléfono</label>
+          <input type="text" id="phone" class="form-control" [(ngModel)]="userData.phone" [disabled]="!isEditing">
+        </div>
+        <div class="form-actions">
+          <button *ngIf="!isEditing" class="btn btn-primary" (click)="toggleEdit()">Editar Perfil</button>
+          <button *ngIf="isEditing" class="btn btn-success" (click)="saveChanges()">Guardar Cambios</button>
+          <button *ngIf="isEditing" class="btn btn-secondary" (click)="toggleEdit()">Cancelar</button>
+          <button class="btn btn-security" (click)="openPasswordModal()">Cambiar Contraseña</button>
+        </div>
+      </div>
+    </div>
+
+    
+    <div *ngIf="activeTab === 'orders'" class="tab-pane">
+      <div *ngIf="!userOrders.length && !ordersError" class="empty-state">No tienes pedidos aún.</div>
+      <div *ngIf="ordersError" class="error-state">{{ ordersError }}</div>
+
+      <div class="item-list">
+        <div *ngFor="let order of userOrders" class="item-card" [class.expanded]="order.expanded">
+          <div class="item-header" (click)="toggleDetails(order)">
+            <span>Pedido #{{ order.idPedido || order.id_pedido }}</span>
+            <span>{{ (order.fecha || order.fecha_pedido) | date:'dd/MM/yyyy' }}</span>
+            <span class="status-badge" [ngClass]="'status-' + order.estado">{{ order.estado }}</span>
+            <i class="arrow-icon" [ngClass]="order.expanded ? 'arrow-up' : 'arrow-down'"></i>
+          </div>
+          <div *ngIf="order.expanded" class="item-details">
+            <div *ngIf="order?.detalles">
+              <div *ngIf="order?.detalles?.length === 0" class="empty-state-inner">
+                No se encontraron detalles para este pedido.
+              </div>
+              <div *ngIf="order?.detalles?.length! > 0">
+                <div class="order-details-grid">
+                  <div *ngFor="let detail of order.detalles" class="product-item">
+                    <img [src]="detail?.imagen ? 'http://localhost:5000/uploads/products/' + detail.imagen : 'assets/pure-inka-logo.png'" 
+                         alt="{{ detail?.producto_nombre || 'Producto' }}"
+                         onerror="this.src='assets/pure-inka-logo.png'">
+                    <div class="product-info">
+                      <span>{{ detail?.producto_nombre || 'Producto' }}</span>
+                      <span>{{ detail?.cantidad }} x S/. {{ (detail?.precio_unitario || detail?.precioUnitario || 0) | number:'1.2-2' }}</span>
+                    </div>
+                    <span class="product-total">S/. {{ ((detail?.cantidad || 0) * (detail?.precio_unitario || detail?.precioUnitario || 0)) | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+                <div class="order-footer d-flex justify-content-between align-items-center mt-3">
+                  <a *ngIf="order.boleta_url" [href]="'http://localhost:5000' + order.boleta_url" 
+                     target="_blank" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Ver Boleta
+                  </a>
+                  <strong>Total: S/. {{ (order?.totalPagar || order?.total || 0) | number:'1.2-2' }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div *ngIf="activeTab === 'addresses'" class="tab-pane">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Mis Direcciones</h3>
+        <button class="btn btn-success" (click)="openAddressModal()">
+          <i class="bi bi-plus-circle me-2"></i> Nueva Dirección
+        </button>
+      </div>
+
+      <div *ngIf="!direcciones.length" class="empty-state">No tienes direcciones registradas.</div>
+
+      <div class="address-grid">
+        <div *ngFor="let dir of direcciones" class="address-card">
+          <div class="address-header">
+            <span class="badge bg-secondary">{{ (dir.tipo || 'Dirección') | uppercase }}</span>
+            <div class="address-actions">
+              <button class="btn-icon edit" (click)="openEditAddressModal(dir)" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn-icon delete" (click)="deleteAddress(dir.idDireccion || dir.id_direccion || 0)" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="address-body">
+            <p><strong>{{ dir.nombre_receptor || userData.fullName }}</strong></p>
+            <p>{{ dir.direccion }}</p>
+            <p>{{ dir.distrito || dir.ciudad }}, {{ dir.pais || 'Perú' }}</p>
+            <p *ngIf="dir.referencia" class="text-muted small">Ref: {{ dir.referencia }}</p>
+            <p *ngIf="dir.codigo_postal">C.P.: {{ dir.codigo_postal }}</p>
+            <p class="text-muted small"><i class="bi bi-telephone me-1"></i> {{ dir.telefono_receptor || userData.phone }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div *ngIf="showAddressModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>{{ isEditingAddress ? 'Editar Dirección' : 'Nueva Dirección' }}</h3>
+      <button class="close-btn" (click)="closeAddressModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="nombre_receptor">Nombre del Receptor *</label>
+        <input type="text" id="nombre_receptor" class="form-control" [(ngModel)]="newAddress.nombre_receptor"
+          placeholder="Quién recibe">
+      </div>
+      <div class="form-group">
+        <label for="telefono_receptor">Teléfono del Receptor *</label>
+        <input type="text" id="telefono_receptor" class="form-control" [(ngModel)]="newAddress.telefono_receptor"
+          placeholder="Contacto">
+      </div>
+      <div class="form-group">
+        <label for="direccion">Dirección *</label>
+        <input type="text" id="direccion" class="form-control" [(ngModel)]="newAddress.direccion"
+          placeholder="Calle, número, referencia">
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="distrito">Distrito *</label>
+            <input type="text" id="distrito" class="form-control" [(ngModel)]="newAddress.distrito">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="referencia">Referencia</label>
+            <input type="text" id="referencia" class="form-control" [(ngModel)]="newAddress.referencia">
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="addressMessage" class="alert"
+        [ngClass]="addressMessageType === 'success' ? 'alert-success' : 'alert-danger'">
+        {{ addressMessage }}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeAddressModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="saveAddress()" [disabled]="isSubmittingAddress">
+        {{ isSubmittingAddress ? 'Guardando...' : 'Guardar Dirección' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="showPasswordModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Cambiar Contraseña</h3>
+      <button class="close-btn" (click)="closePasswordModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="currentPassword">Contraseña Actual</label>
+        <input type="password" id="currentPassword" class="form-control" [(ngModel)]="passwordData.current">
+      </div>
+      <div class="form-group">
+        <label for="newPassword">Nueva Contraseña</label>
+        <input type="password" id="newPassword" class="form-control" [(ngModel)]="passwordData.new">
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+        <input type="password" id="confirmPassword" class="form-control" [(ngModel)]="passwordData.confirm">
+      </div>
+      <div *ngIf="passwordMessage" class="alert"
+        [ngClass]="passwordMessageType === 'success' ? 'alert-success' : 'alert-danger'">
+        {{ passwordMessage }}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closePasswordModal()">Cancelar</button>
+      <button class="btn btn-primary" (click)="changePassword()" [disabled]="isChangingPassword">
+        {{ isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
+      </button>
+    </div>
+  </div>
+</div>

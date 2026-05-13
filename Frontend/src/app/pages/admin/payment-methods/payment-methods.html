@@ -1,0 +1,133 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold text-dark mb-0">Gestión de Métodos de Pago</h1>
+        <button class="btn btn-success fw-bold" (click)="showAddForm.set(!showAddForm())">
+            <i class="bi" [class.bi-plus-circle]="!showAddForm()" [class.bi-x-circle]="showAddForm()"></i>
+            {{ showAddForm() ? 'Cancelar' : 'Nuevo Método' }}
+        </button>
+    </div>
+
+    
+    <div *ngIf="error()" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error() }}
+        <button type="button" class="btn-close" (click)="error.set(null)"></button>
+    </div>
+    <div *ngIf="successMessage()" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> {{ successMessage() }}
+        <button type="button" class="btn-close" (click)="successMessage.set(null)"></button>
+    </div>
+
+    
+    <div *ngIf="showAddForm()" class="card shadow-sm border-0 mb-4 animate-fade-in">
+        <div class="card-header bg-white py-3">
+            <h5 class="card-title mb-0 fw-bold text-primary">Agregar Nuevo Método</h5>
+        </div>
+        <div class="card-body">
+            <form (ngSubmit)="addMethod()">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Nombre del Método*</label>
+                        <input type="text" class="form-control" [(ngModel)]="newMethod.nombre" name="name" placeholder="Ej: card, yape, plin" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Descripción*</label>
+                        <input type="text" class="form-control" [(ngModel)]="newMethod.descripcion" name="desc" placeholder="Ej: Tarjeta de Crédito" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Imagen QR (Opcional)</label>
+                        <input type="file" class="form-control" (change)="onFileSelected($event)" accept="image/*">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Instrucciones de Pago</label>
+                        <textarea class="form-control" rows="3" [(ngModel)]="newMethod.instrucciones" name="instr" placeholder="Pasos para que el cliente realice el pago..."></textarea>
+                    </div>
+                    <div class="col-12 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary px-4 fw-bold" [disabled]="isLoading()">
+                            {{ isLoading() ? 'Guardando...' : 'Crear Método' }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4" *ngFor="let method of methods()">
+            <div class="card h-100 border-0 shadow-sm method-card">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light p-2 rounded-circle me-3">
+                                <i class="bi fs-4 text-primary" [ngClass]="{
+                                    'bi-credit-card': method.nombre === 'card',
+                                    'bi-qr-code-scan': method.nombre === 'yape' || method.nombre === 'plin',
+                                    'bi-bank': method.nombre === 'transferencia',
+                                    'bi-paypal': method.nombre === 'paypal',
+                                    'bi-cash': method.nombre !== 'card' && method.nombre !== 'yape' && method.nombre !== 'plin'
+                                }"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0 text-dark">{{ method.descripcion || method.nombre }}</h5>
+                                <span class="badge" [class.bg-success]="method.activo" [class.bg-secondary]="!method.activo">
+                                    {{ method.activo ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-link text-muted p-0" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="javascript:void(0)" (click)="toggleActive(method)">
+                                    <i class="bi" [class.bi-toggle-on]="!method.activo" [class.bi-toggle-off]="method.activo"></i>
+                                    {{ method.activo ? 'Desactivar' : 'Activar' }}
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="javascript:void(0)" (click)="deleteMethod(method.id_metodo)">
+                                    <i class="bi bi-trash me-2"></i>Eliminar
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div *ngIf="method.imagen_qr" class="text-center mb-3">
+                        <img [src]="getQrUrl(method.imagen_qr)" alt="QR" class="qr-preview shadow-sm">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Actualizar QR</label>
+                        <input type="file" class="form-control form-control-sm" #fileInput accept="image/*">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Instrucciones</label>
+                        <textarea class="form-control form-control-sm bg-light" rows="4" 
+                            [(ngModel)]="method.instrucciones" 
+                            placeholder="Sin instrucciones configuradas..."></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">ID: <code>{{ method.nombre }}</code></small>
+                        <button class="btn btn-sm btn-outline-primary fw-bold" (click)="updateMethod(method, fileInput)">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div *ngIf="!isLoading() && methods().length === 0" class="text-center py-5 mt-5">
+        <i class="bi bi-wallet2 display-1 text-muted opacity-25 mb-3 d-block"></i>
+        <h4 class="text-muted">No hay métodos de pago configurados</h4>
+        <p class="text-muted small">Haz clic en "Nuevo Método" para comenzar.</p>
+    </div>
+
+    
+    <div *ngIf="isLoading()" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted small">Procesando datos...</p>
+    </div>
+</div>

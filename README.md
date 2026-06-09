@@ -11,6 +11,9 @@
    * Gestión de Inventario : Control en tiempo real con alertas críticas.
    * Automatización Fiscal: Generación instantánea de Boletas/Facturas PDF.
    * Pasarela Multicanal : Integración Stripe + Pagos QR (Yape/Plin).
+   * Sistema de Cupones  : Implementación de códigos promocionales (fijos/porcentaje).
+   * Reseñas y Feedback  : Calificación de productos y opiniones verificadas.
+   * Soporte por Tickets : Gestión centralizada de consultas de clientes.
    * Seguridad Avanzada  : Verificación por código y bloqueo dinámico.
    * Inteligencia Negocio : Dashboard con KPIs de ventas y crecimiento.
 

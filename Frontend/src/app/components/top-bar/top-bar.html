@@ -3,17 +3,8 @@
   role="banner"
   aria-label="Barra superior de navegación"
 >
-  <div class="container d-flex justify-content-between align-items-center flex-wrap">
-    
-    
-    <span class="small fw-bold text-uppercase d-none d-md-block text-white">
-      * FREE SHIPPING ON ALL ORDERS | N. AMERICA + EUROPE *
-    </span>
-
-    
+  <div class="container d-flex align-items-center flex-wrap">
     <div class="d-flex align-items-center flex-wrap gap-2">
-      
-      
       @if (isDistributor()) {
         <span 
           class="text-white small fw-bold"
@@ -22,18 +13,18 @@
           Usted Es Distribuidor
         </span>
       }
+    </div>
 
-      
+    <div class="d-flex align-items-center flex-wrap gap-2 ms-auto">
       @if (!authService.isAuthenticated()) {
         <a 
           [routerLink]="['/auth']" 
           class="text-white small text-decoration-none top-link"
           aria-label="Iniciar sesión o registrarse"
         >
-          LOGIN
+          INICIAR SESIÓN
         </a>
       }
-      
       
       @if (authService.isAuthenticated()) {
         <a 
@@ -46,7 +37,6 @@
         </a>
       }
 
-      
       @if (authService.isAdmin()) {
         <button 
           (click)="logout()"
@@ -58,7 +48,6 @@
         </button>
       }
 
-      
       <div class="dropdown d-inline-block" [class.show]="showCartDropdown()">
         <button 
           class="btn btn-sm text-white ps-0 pe-2 position-relative cart-icon-btn" 

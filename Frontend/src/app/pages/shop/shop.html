@@ -53,6 +53,23 @@
           </div>
         </div>
 
+        <div class="mb-4">
+          <h5 class="fw-bold mb-3">Ordenar por</h5>
+          <select
+            class="form-select"
+            [(ngModel)]="selectedSort"
+            (change)="onSortChange($event)"
+            [disabled]="getLoading()"
+          >
+            <option value="newest">Más recientes</option>
+            <option value="price_asc">Precio: Menor a Mayor</option>
+            <option value="price_desc">Precio: Mayor a Menor</option>
+            <option value="name_asc">Nombre: A - Z</option>
+            <option value="name_desc">Nombre: Z - A</option>
+            <option value="oldest">Más antiguos</option>
+          </select>
+        </div>
+
         <div>
           <h5 class="fw-bold mb-3">Categorías</h5>
           <select
@@ -103,7 +120,10 @@
           <div class="row g-4">
             @for (product of getProducts(); track product.idProducto) {
               <div class="col-md-4 col-sm-6">
-                <app-product-card [product]="product"></app-product-card>
+                <app-product-card 
+                  [product]="product" 
+                  (viewDetail)="openProductDetail($event)">
+                </app-product-card>
               </div>
             }
           </div>
@@ -111,4 +131,159 @@
       </div>
     </div>
   }
+</div>
+
+
+<div *ngIf="selectedProduct" class="modal-overlay">
+  <div class="modal-content product-detail-modal">
+    <div class="modal-header border-0 pb-0">
+      <button class="close-btn" (click)="closeProductDetail()">&times;</button>
+    </div>
+    <div class="modal-body pt-0">
+      <div class="row">
+        
+        <div class="col-md-6 mb-4 mb-md-0">
+          <div class="product-image-container">
+            <img [src]="getProductImage(selectedProduct.imagen || selectedProduct.image)" 
+                 [alt]="selectedProduct.nombre || selectedProduct.name"
+                 class="img-fluid rounded shadow-sm">
+          </div>
+        </div>
+
+        
+        <div class="col-md-6">
+          <span class="badge bg-success mb-2">{{ selectedProduct.categoriaNombre }}</span>
+          <h2 class="fw-bold mb-1">{{ selectedProduct.nombre || selectedProduct.name }}</h2>
+          
+          <!-- Stars rating summary -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="text-warning me-2">
+              @for (star of [1,2,3,4,5]; track star) {
+                <i class="bi" [class.bi-star-fill]="star <= averageRating" [class.bi-star]="star > averageRating"></i>
+              }
+            </div>
+            <span class="small text-muted">
+              @if (totalReviews > 0) {
+                ({{ averageRating }} / 5 - {{ totalReviews }} opiniones)
+              } @else {
+                (Sin calificaciones aún)
+              }
+            </span>
+          </div>
+
+          <p class="text-muted mb-4">{{ selectedProduct.descripcion || selectedProduct.description }}</p>
+          
+          <div class="d-flex align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0 me-3">S/. {{ (selectedProduct.precio || selectedProduct.price) | number:'1.2-2' }}</h3>
+            <span class="text-muted small">Stock: {{ selectedProduct.stock }} unid.</span>
+          </div>
+
+          <button class="btn btn-success w-100 py-3 fw-bold" 
+                  (click)="cartService.addToCart(selectedProduct); closeProductDetail();"
+                  [disabled]="selectedProduct.stock <= 0">
+            <i class="bi bi-cart-plus me-2"></i> 
+            {{ selectedProduct.stock > 0 ? 'AGREGAR AL CARRITO' : 'AGOTADO' }}
+          </button>
+        </div>
+      </div>
+
+      
+      <hr class="my-5">
+      <div class="related-section">
+        <h4 class="fw-bold mb-4">También te podría gustar</h4>
+        
+        @if (isLoadingRelated) {
+          <div class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+          </div>
+        }
+
+        @if (!isLoadingRelated && relatedProducts.length === 0) {
+          <p class="text-muted small italic">No hay productos similares en este momento.</p>
+        }
+
+        <div class="row g-3">
+          @for (rel of relatedProducts; track rel.id) {
+            <div class="col-6 col-md-3">
+              <div class="related-card" (click)="openProductDetail(rel)" style="cursor: pointer;">
+                <img [src]="getProductImage(rel.imagen || rel.image)" class="img-fluid rounded mb-2">
+                <h6 class="small fw-bold mb-1 text-truncate">{{ rel.nombre || rel.name }}</h6>
+                <span class="text-success small fw-bold">S/. {{ rel.price | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <hr class="my-5">
+      <div class="reviews-section">
+        <h4 class="fw-bold mb-4">Opiniones de Clientes</h4>
+
+        @if (reviewsList.length === 0) {
+          <p class="text-muted italic">Aún no hay reseñas para este producto.</p>
+        } @else {
+          <div class="list-group mb-4">
+            @for (rev of reviewsList; track rev.idResena) {
+              <div class="list-group-item border-0 px-0 py-3 border-bottom">
+                <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0 fw-bold">{{ rev.cliente_nombre }}</h6>
+                  <small class="text-muted">{{ rev.fecha | date:'dd/MM/yyyy' }}</small>
+                </div>
+                <div class="text-warning mb-2">
+                  @for (star of [1,2,3,4,5]; track star) {
+                    <i class="bi" [class.bi-star-fill]="star <= rev.calificacion" [class.bi-star]="star > rev.calificacion"></i>
+                  }
+                </div>
+                <p class="mb-0 text-muted">{{ rev.comentario }}</p>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Add/Update Review Form -->
+        @if (authService.isAuthenticatedUser()) {
+          <div class="card bg-light border-0 p-4 rounded mt-4">
+            <h5 class="fw-bold mb-1">Deja tu opinión</h5>
+            <p class="text-muted small mb-3">Nota: Solo puedes opinar si has comprado y pagado este producto.</p>
+            
+            @if (reviewStatusMessage) {
+              <div class="alert alert-success py-2">{{ reviewStatusMessage }}</div>
+            }
+            @if (reviewErrorMessage) {
+              <div class="alert alert-danger py-2">{{ reviewErrorMessage }}</div>
+            }
+
+            <form (ngSubmit)="submitReview()" #reviewForm="ngForm">
+              <div class="mb-3">
+                <label for="reviewRating" class="form-label fw-bold">Calificación</label>
+                <select id="reviewRating" class="form-select" [(ngModel)]="userRating" name="userRating" required>
+                  <option [value]="5">5 - Excelente</option>
+                  <option [value]="4">4 - Muy Bueno</option>
+                  <option [value]="3">3 - Bueno</option>
+                  <option [value]="2">2 - Regular</option>
+                  <option [value]="1">1 - Malo</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="reviewComment" class="form-label fw-bold">Comentario</label>
+                <textarea id="reviewComment" class="form-control" rows="3" [(ngModel)]="userComment" name="userComment" placeholder="Cuéntanos tu experiencia con este producto..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-success fw-bold w-100 py-2" [disabled]="isSubmittingReview || !userComment">
+                @if (isSubmittingReview) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                ENVIAR OPINIÓN
+              </button>
+            </form>
+          </div>
+        } @else {
+          <div class="alert alert-warning mt-4 py-3">
+            <i class="bi bi-info-circle me-2"></i>
+            Debes <a href="/auth" class="fw-bold text-decoration-underline text-warning">iniciar sesión</a> para dejar una reseña.
+          </div>
+        }
+      </div>
+    </div>
+  </div>
 </div>

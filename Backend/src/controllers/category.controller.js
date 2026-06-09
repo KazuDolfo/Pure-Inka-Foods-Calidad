@@ -1,19 +1,14 @@
-
 const pool = require('../config/db');
+const { sendSuccess, handleError } = require('../utils/controller-helpers');
+
+const CATEGORY_SELECT_QUERY = 'SELECT *, idCategoria as id_categoria, nombre as nombre_categoria FROM Categoria';
 
 exports.getAllCategories = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT *, idCategoria as id_categoria, nombre as nombre_categoria FROM Categoria');
-    res.json({
-      success: true,
-      data: rows
-    });
+    const [categories] = await pool.query(CATEGORY_SELECT_QUERY);
+    return sendSuccess(res, { data: categories });
   } catch (error) {
-    console.error('Error al obtener categorías:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener categorías'
-    });
+    return handleError(res, error, 'Error al obtener categorías', 'category.getAllCategories');
   }
 };
 
@@ -26,16 +21,11 @@ exports.createCategory = async (req, res) => {
       [nombre, descripcion]
     );
 
-    res.status(201).json({
-      success: true,
+    return sendSuccess(res, {
       message: 'Categoría creada exitosamente',
-      data: { id: result.insertId }
-    });
+      data: { id: result.insertId },
+    }, 201);
   } catch (error) {
-    console.error('Error al crear categoría:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear categoría'
-    });
+    return handleError(res, error, 'Error al crear categoría', 'category.createCategory');
   }
 };

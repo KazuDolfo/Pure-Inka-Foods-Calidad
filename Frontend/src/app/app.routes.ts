@@ -22,6 +22,8 @@ export const routes: Routes = [
       { path: 'orders', loadComponent: () => import('./pages/admin/orders/orders').then(m => m.Orders), title: 'Admin - Pedidos' },
       { path: 'products', loadComponent: () => import('./pages/admin/products/products').then(m => m.ProductsComponent), title: 'Admin - Productos' },
       { path: 'payment-methods', loadComponent: () => import('./pages/admin/payment-methods/payment-methods').then(m => m.PaymentMethodsComponent), title: 'Admin - Métodos de Pago' },
+      { path: 'coupons', loadComponent: () => import('./pages/admin/coupons/coupons').then(m => m.CouponsComponent), title: 'Admin - Cupones' },
+      { path: 'tickets', loadComponent: () => import('./pages/admin/tickets/tickets').then(m => m.TicketsComponent), title: 'Admin - Tickets' },
 
       { path: '', redirectTo: 'home', pathMatch: 'full' } 
     ]

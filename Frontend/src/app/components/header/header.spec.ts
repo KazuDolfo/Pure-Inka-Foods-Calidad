@@ -1,18 +1,29 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
-import { Header } from './header';
+import { HeaderComponent } from './header';
+import { AuthService } from '../../../services/auth/auth.service';
 
-describe('Header', () => {
-  let component: Header;
-  let fixture: ComponentFixture<Header>;
+describe('HeaderComponent', () => {
+  let component: HeaderComponent;
+  let fixture: ComponentFixture<HeaderComponent>;
+  let authServiceMock: Partial<AuthService>;
 
   beforeEach(async () => {
+    authServiceMock = {
+      isAdmin: () => false,
+      getCurrentUser: () => ({ rol: 'cliente' } as any)
+    };
+
     await TestBed.configureTestingModule({
-      imports: [Header]
+      imports: [HeaderComponent, RouterTestingModule],
+      providers: [
+        { provide: AuthService, useValue: authServiceMock }
+      ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Header);
+    fixture = TestBed.createComponent(HeaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

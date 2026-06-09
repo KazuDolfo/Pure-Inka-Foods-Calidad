@@ -1,62 +1,48 @@
-============================================================
-       MANUAL DE USUARIO - PURE INKA E-COMMERCE
-============================================================
 
-Bienvenido a PURE INKA, su tienda en línea de productos naturales y 
-superalimentos de alta calidad.
+   MANUAL DE USUARIO - PURE INKA FOODS (GESTIÓN DE VENTAS)
+   -------------------------------------------------------
 
-------------------------------------------------------------
-1. INTRODUCCIÓN
-------------------------------------------------------------
-La plataforma permite a los usuarios navegar por un catálogo de productos 
-naturales, gestionar un carrito de compras, realizar pedidos y administrar 
-su perfil de usuario de forma intuitiva.
+   [ 1. ACCESOS RÁPIDOS PARA PRUEBAS ]
+   
+   👤 ROL CLIENTE
+      - Correo: berna@gmail.com
+      - Clave : sasasa
 
-------------------------------------------------------------
-2. CUENTAS DE ACCESO PARA PRUEBAS
-------------------------------------------------------------
-Para facilitar la navegación inicial, puede usar las siguientes cuentas:
+   🔑 ROL ADMINISTRADOR
+      - Correo: admin@pureinka.com
+      - Clave : Admin123
 
-CLIENTE:
-- Correo: berna@gmail.com
-- Contraseña: sasasa
 
-ADMINISTRADOR:
-- Correo: admin@pureinka.com
-- Contraseña: Admin123
+   [ 2. EXPERIENCIA DEL CLIENTE ]
 
-------------------------------------------------------------
-3. FUNCIONALIDADES PARA CLIENTES
-------------------------------------------------------------
-- Catálogo de Productos: Explore por categorías (Superalimentos, Granos, etc.).
-- Carrito de Compras: Añada o elimine productos, ajuste cantidades en tiempo real.
-- Checkout: Proceso de compra seguro con integración de pagos.
-- Perfil: Gestione sus direcciones de envío y vea su historial de pedidos realizados.
-- Búsqueda: Localice productos rápidamente utilizando la barra de búsqueda.
+   > Registro Seguro:
+     Al crear su cuenta, deberá ingresar un código de 6 dígitos.
+     (Busque el código en la consola del servidor Backend).
 
-------------------------------------------------------------
-4. FUNCIONALIDADES PARA ADMINISTRADORES
-------------------------------------------------------------
-Al iniciar sesión con una cuenta de administrador, tendrá acceso al Panel de Administración:
-- Gestión de Productos: Añadir nuevos productos, editar existentes o desactivarlos.
-- Categorías: Organizar y gestionar las categorías del catálogo.
-- Pedidos: Supervisar y gestionar todas las compras realizadas en la plataforma.
-- Usuarios: Visualizar la lista de clientes registrados.
+   > Exploración Inteligente:
+     Navegue por la tienda. Al hacer clic en un producto, verá 
+     la descripción detallada y sugerencias automáticas de 
+     artículos similares.
 
-------------------------------------------------------------
-5. PROCESO DE COMPRA
-------------------------------------------------------------
-1. Inicie sesión con su cuenta de cliente.
-2. Navegue por la tienda y añada los productos deseados al carrito.
-3. Haga clic en el ícono del carrito para revisar su selección.
-4. Proceda al botón de "Checkout" o "Finalizar Compra".
-5. Seleccione una dirección de envío guardada o añada una nueva.
-6. Elija el método de pago y complete los detalles solicitados.
-7. Al confirmar, podrá descargar su comprobante y ver el estado en "Mi Perfil".
+   > Carrito y Pago:
+     El sistema valida el stock antes de pagar. Puede elegir 
+     Stripe o Yape/Plin (subiendo su captura de pago).
 
-------------------------------------------------------------
-6. SOPORTE Y CONTACTO
-------------------------------------------------------------
-Para cualquier inconveniente técnico durante la instalación, consulte la 
-'Guía de Ejecución' incluida en el proyecto.
-============================================================
+   > Gestión de Pedidos:
+     Desde "Mi Perfil" descargue sus comprobantes PDF o cancele 
+     pedidos que aún no hayan sido procesados.
+
+
+   [ 3. PANEL ADMINISTRATIVO ]
+
+   > Centro de Mando:
+     Monitoree ingresos reales, ticket promedio y usuarios nuevos.
+     Atienda las alertas rojas de "Inventario Crítico" de inmediato.
+
+   > Control Operativo:
+     Gestione productos, actualice stock y cambie el estado de 
+     los pedidos para informar al cliente.
+
+   > Seguridad y Auditoría:
+     El sistema bloquea cuentas tras 5 fallos. Revise la carpeta 
+     '/logs' para ver el historial detallado de errores.

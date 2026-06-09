@@ -11,19 +11,24 @@ import { AuthService } from '../../../services/auth/auth.service';
   styleUrl: './admin.scss'
 })
 export class AdminPage {
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
   isSidebarOpen = signal(false);
+  private readonly mobileBreakpoint = 992;
 
   toggleSidebar(): void {
-    this.isSidebarOpen.update(v => !v);
+    this.isSidebarOpen.update((value) => !value);
   }
 
   closeSidebarOnMobile(): void {
-    if (window.innerWidth < 992) {
+    if (this.isMobileViewport()) {
       this.isSidebarOpen.set(false);
     }
+  }
+
+  private isMobileViewport(): boolean {
+    return window.innerWidth < this.mobileBreakpoint;
   }
 
   logout(): void {

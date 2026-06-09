@@ -22,6 +22,8 @@ export interface Producto {
   rating?: number;
   isNew?: boolean;
   id_categoria?: number;
+  promedioResenas?: number;
+  totalResenas?: number;
 }
 
 export type Product = Producto;

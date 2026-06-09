@@ -10,7 +10,7 @@
       type="button" 
       (click)="toggleMobileMenu()"
       aria-label="Abrir menú de navegación"
-      [attr.aria-expanded]="isMobileMenuOpen()"
+      [attr.aria-expanded]="mobileMenuVisible()"
       aria-controls="navbarMainContent"
     >
       <span class="navbar-toggler-icon"></span>
@@ -36,7 +36,7 @@
     <div 
       class="collapse navbar-collapse justify-content-end" 
       id="navbarMainContent"
-      [class.show]="isMobileMenuOpen()"
+      [class.show]="mobileMenuVisible()"
     >
       <ul class="navbar-nav align-items-center">
         <li class="nav-item">

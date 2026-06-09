@@ -9,11 +9,9 @@ import { Component } from '@angular/core';
   styleUrl: './footer.scss'
 })
 export class FooterComponent {
-  
-  currentYear: number = new Date().getFullYear();
-  
-  
-  contactInfo = {
+  readonly currentYear = new Date().getFullYear();
+
+  readonly contactInfo = {
     email: 'pureinkafoods@gmail.com',
     phone: '+1 217-919-0170',
     social: {

@@ -30,7 +30,10 @@
     <div class="row g-4 justify-content-center">
       @for (product of featuredProducts; track product.id) {
         <div class="col-lg-3 col-md-4 col-sm-6">
-          <app-product-card [product]="product"></app-product-card>
+          <app-product-card 
+            [product]="product" 
+            (viewDetail)="openProductDetail($event)">
+          </app-product-card>
         </div>
       }
     </div>
@@ -48,3 +51,71 @@
     </a>
   </div>
 </section>
+
+<!-- Modal de Detalle de Producto (RF-17) -->
+<div *ngIf="selectedProduct" class="modal-overlay">
+  <div class="modal-content product-detail-modal">
+    <div class="modal-header border-0 pb-0">
+      <button class="close-btn" (click)="closeProductDetail()">&times;</button>
+    </div>
+    <div class="modal-body pt-0">
+      <div class="row">
+        
+        <div class="col-md-6 mb-4 mb-md-0">
+          <div class="product-image-container">
+            <img [src]="getProductImage(selectedProduct.imagen || selectedProduct.image)" 
+                 [alt]="selectedProduct.nombre || selectedProduct.name"
+                 class="img-fluid rounded shadow-sm">
+          </div>
+        </div>
+
+        
+        <div class="col-md-6">
+          <span class="badge bg-success mb-2">{{ selectedProduct.categoriaNombre || 'Superalimento' }}</span>
+          <h2 class="fw-bold mb-3">{{ selectedProduct.nombre || selectedProduct.name }}</h2>
+          <p class="text-muted mb-4">{{ selectedProduct.descripcion || selectedProduct.description }}</p>
+          
+          <div class="d-flex align-items-center mb-4">
+            <h3 class="text-primary fw-bold mb-0 me-3">S/. {{ (selectedProduct.precio || selectedProduct.price) | number:'1.2-2' }}</h3>
+            <span class="text-muted small">Stock: {{ selectedProduct.stock }} unid.</span>
+          </div>
+
+          <button class="btn btn-success w-100 py-3 fw-bold" 
+                  (click)="cartService.addToCart(selectedProduct); closeProductDetail();"
+                  [disabled]="selectedProduct.stock <= 0">
+            <i class="bi bi-cart-plus me-2"></i> 
+            {{ selectedProduct.stock > 0 ? 'AGREGAR AL CARRITO' : 'AGOTADO' }}
+          </button>
+        </div>
+      </div>
+
+      
+      <hr class="my-5">
+      <div class="related-section">
+        <h4 class="fw-bold mb-4">También te podría gustar</h4>
+        
+        @if (isLoadingRelated) {
+          <div class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+          </div>
+        }
+
+        @if (!isLoadingRelated && relatedProducts.length === 0) {
+          <p class="text-muted small italic">No hay productos similares en este momento.</p>
+        }
+
+        <div class="row g-3">
+          @for (rel of relatedProducts; track rel.id) {
+            <div class="col-6 col-md-3">
+              <div class="related-card" (click)="openProductDetail(rel)" style="cursor: pointer;">
+                <img [src]="getProductImage(rel.imagen || rel.image)" class="img-fluid rounded mb-2">
+                <h6 class="small fw-bold mb-1 text-truncate">{{ rel.nombre || rel.name }}</h6>
+                <span class="text-success small fw-bold">S/. {{ rel.price | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,143 +1,244 @@
-
 const pool = require('../config/db');
-const { generateInvoice } = require('../utils/pdf-generator');
+const {
+  sendSuccess,
+  sendError,
+  handleError,
+  isCardPayment,
+  parseCartItems,
+  getProductIdFromCartItem,
+  generateOrderInvoice,
+  optimizeUploadedImage,
+  VOUCHER_UPLOAD_DIR,
+} = require('../utils/controller-helpers');
+
+const MY_ORDERS_QUERY = `
+  SELECT p.idPedido, p.fecha, p.estado, p.totalProductos, p.costoEnvio, p.totalPagar, p.comprobantePago,
+         p.idPedido as id_pedido, p.fecha as fecha_pedido, p.totalPagar as total,
+         cp.rutaPDF as boleta_url
+  FROM pedido p
+  LEFT JOIN pago pg ON p.idPedido = pg.idPedido
+  LEFT JOIN comprobantepago cp ON pg.idPago = cp.idPago
+  WHERE p.idCliente = ?
+  ORDER BY p.fecha DESC
+`;
+
+const ORDER_DETAILS_QUERY = `
+  SELECT dp.*, p.nombre as producto_nombre, p.imagen, dp.precioUnitario as precio_unitario
+  FROM detallepedido dp
+  JOIN producto p ON dp.idProducto = p.idProducto
+  WHERE dp.idPedido = ?
+`;
+
+const PAYMENT_METHOD_ID_QUERY = 'SELECT idMetodoPago FROM MetodoPago WHERE nombre = ?';
+
+function getOrderStatus(metodoPago) {
+  return isCardPayment(metodoPago) ? 'PAGADO' : 'PENDIENTE';
+}
+
+function getPaymentStatus(orderStatus) {
+  return orderStatus === 'PAGADO' ? 'COMPLETADO' : 'PENDIENTE';
+}
+
+function getPaymentReference(metodoPago) {
+  return isCardPayment(metodoPago) ? 'STRIPE_AUTO' : 'USER_UPLOAD';
+}
+
+async function fetchPaymentMethodId(connection, metodoPago) {
+  const [rows] = await connection.query(PAYMENT_METHOD_ID_QUERY, [String(metodoPago || '').toLowerCase()]);
+  return rows[0] ? rows[0].idMetodoPago : 1;
+}
+
+async function insertOrder(connection, orderData) {
+  const {
+    userId,
+    shippingTypeId,
+    shippingAddressId,
+    orderStatus,
+    subtotal,
+    shippingCost,
+    total,
+    paymentMethod,
+    invoiceType,
+    ruc,
+    razonSocial,
+    voucherPath,
+    idCupon,
+    descuento,
+  } = orderData;
+
+  const [result] = await connection.query(
+    `INSERT INTO pedido (idCliente, idTipoEntrega, idDireccion, fecha, estado, totalProductos, costoEnvio, totalPagar, metodoPago, tipoComprobante, ruc, razonSocial, comprobantePago, idCupon, descuento)
+     VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      userId,
+      shippingTypeId,
+      shippingAddressId,
+      orderStatus,
+      subtotal,
+      shippingCost,
+      total,
+      paymentMethod,
+      invoiceType,
+      ruc,
+      razonSocial,
+      voucherPath,
+      idCupon,
+      descuento,
+    ]
+  );
+
+  return result.insertId;
+}
+
+async function insertPayment(connection, orderId, total, metodoPago, orderStatus) {
+  const paymentMethodId = await fetchPaymentMethodId(connection, metodoPago);
+  const paymentStatus = getPaymentStatus(orderStatus);
+  const paymentReference = getPaymentReference(metodoPago);
+
+  await connection.query(
+    'INSERT INTO pago (idPedido, idMetodoPago, monto, estado, referenciaExterna) VALUES (?, ?, ?, ?, ?)',
+    [orderId, paymentMethodId, total, paymentStatus, paymentReference]
+  );
+}
+
+async function insertOrderDetails(connection, orderId, cartItems) {
+  for (const item of cartItems) {
+    const productId = getProductIdFromCartItem(item);
+    const quantity = item.quantity || 0;
+    const unitPrice = item.price || 0;
+    const subtotalItem = unitPrice * quantity;
+
+    await connection.query(
+      'INSERT INTO detallepedido (idPedido, idProducto, cantidad, precioUnitario, subtotal) VALUES (?, ?, ?, ?, ?)',
+      [orderId, productId, quantity, unitPrice, subtotalItem]
+    );
+
+    await connection.query(
+      'UPDATE producto SET stock = stock - ? WHERE idProducto = ?',
+      [quantity, productId]
+    );
+  }
+}
+
+async function verifyOrderOwnership(connection, orderId, userId) {
+  const [rows] = await connection.query('SELECT idPedido FROM pedido WHERE idPedido = ? AND idCliente = ?', [orderId, userId]);
+  return rows.length > 0;
+}
+
+async function getOrderState(connection, orderId, userId) {
+  const [rows] = await connection.query('SELECT idPedido, estado FROM pedido WHERE idPedido = ? AND idCliente = ?', [orderId, userId]);
+  return rows[0] || null;
+}
 
 exports.getMyOrders = async (req, res) => {
   try {
-    const userId = req.user.id;
-
-    const [orders] = await pool.query(
-      `SELECT p.idPedido, p.fecha, p.estado, p.totalProductos, p.costoEnvio, p.totalPagar, 
-              p.idPedido as id_pedido, p.fecha as fecha_pedido, p.totalPagar as total,
-              cp.rutaPDF as boleta_url
-       FROM pedido p 
-       LEFT JOIN pago pg ON p.idPedido = pg.idPedido
-       LEFT JOIN comprobantepago cp ON pg.idPago = cp.idPago
-       WHERE p.idCliente = ? 
-       ORDER BY p.fecha DESC`,
-      [userId]
-    );
-
-    res.json({ success: true, data: orders });
+    const [orders] = await pool.query(MY_ORDERS_QUERY, [req.user.id]);
+    return sendSuccess(res, { data: orders });
   } catch (error) {
-    console.error('Error al obtener pedidos:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    return handleError(res, error, 'Error interno del servidor.', 'order.getMyOrders');
   }
 };
 
 exports.getOrderDetails = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { id } = req.params;
+    const orderId = req.params.id;
 
-    
-    const [orderCheck] = await pool.query('SELECT idPedido FROM pedido WHERE idPedido = ? AND idCliente = ?', [id, userId]);
-    if (orderCheck.length === 0) {
-      return res.status(403).json({ success: false, message: 'No tienes permiso para ver este pedido.' });
+    if (!(await verifyOrderOwnership(pool, orderId, req.user.id))) {
+      return sendError(res, 403, 'No tienes permiso para ver este pedido.');
     }
 
-    const [details] = await pool.query(
-      `SELECT dp.*, p.nombre as producto_nombre, p.imagen, dp.precioUnitario as precio_unitario 
-       FROM detallepedido dp
-       JOIN producto p ON dp.idProducto = p.idProducto
-       WHERE dp.idPedido = ?`,
-      [id]
-    );
-
-    res.json({ success: true, data: details });
+    const [details] = await pool.query(ORDER_DETAILS_QUERY, [orderId]);
+    return sendSuccess(res, { data: details });
   } catch (error) {
-    console.error('Error al obtener detalles del pedido:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    return handleError(res, error, 'Error interno del servidor.', 'order.getOrderDetails');
   }
 };
 
 exports.createOrder = async (req, res) => {
   const connection = await pool.getConnection();
   try {
-    const userId = req.user.id;
-    const { id_direccion_envio, id_tipo_entrega, metodo_pago, items, subtotal, costo_envio, total } = req.body;
-    const comprobante_pago = req.file ? req.file.filename : null;
+    const orderPayload = {
+      userId: req.user.id,
+      shippingAddressId: parseInt(req.body.id_direccion_envio, 10),
+      shippingTypeId: parseInt(req.body.id_tipo_entrega, 10),
+      paymentMethod: req.body.metodo_pago,
+      subtotal: req.body.subtotal,
+      shippingCost: req.body.costo_envio,
+      total: req.body.total,
+      invoiceType: String(req.body.tipo_comprobante || 'BOLETA').toUpperCase(),
+      ruc: req.body.ruc || null,
+      razonSocial: req.body.razon_social || null,
+      voucherPath: req.file ? `/uploads/comprobantes/${req.file.filename}` : null,
+      idCupon: req.body.id_cupon ? parseInt(req.body.id_cupon, 10) : null,
+      descuento: req.body.descuento ? parseFloat(req.body.descuento) : 0.00,
+    };
 
-    const cleanDireccionId = parseInt(id_direccion_envio);
-    const cleanEntregaId = parseInt(id_tipo_entrega);
+    await optimizeUploadedImage(req.file, VOUCHER_UPLOAD_DIR, 800);
 
-    if (!items) {
-        return res.status(400).json({ success: false, message: 'No hay productos en el pedido.' });
+    const cartItems = parseCartItems(req.body.items);
+    if (!cartItems || cartItems.length === 0) {
+      return sendError(res, 400, 'No hay productos en el pedido.');
     }
 
-    const cartItems = JSON.parse(items);
-    if (cartItems.length === 0) {
-        return res.status(400).json({ success: false, message: 'El carrito está vacío.' });
-    }
+    const orderStatus = getOrderStatus(orderPayload.paymentMethod);
+    orderPayload.orderStatus = orderStatus;
 
     await connection.beginTransaction();
 
-    const isCard = metodo_pago && (metodo_pago.toLowerCase() === 'card' || metodo_pago.toLowerCase() === 'tarjeta');
-    const initialStatus = isCard ? 'PAGADO' : 'PENDIENTE';
+    const orderId = await insertOrder(connection, orderPayload);
+    await insertPayment(connection, orderId, orderPayload.total, orderPayload.paymentMethod, orderStatus);
+    await insertOrderDetails(connection, orderId, cartItems);
 
-    const [orderResult] = await connection.query(
-      `INSERT INTO pedido (idCliente, idTipoEntrega, idDireccion, fecha, estado, totalProductos, costoEnvio, totalPagar, metodoPago, comprobantePago)
-       VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?)`,
-      [userId, cleanEntregaId, cleanDireccionId, initialStatus, subtotal, costo_envio, total, metodo_pago, comprobante_pago]
-    );
-
-    const orderId = orderResult.insertId;
-
-    for (const item of cartItems) {
-      const productId = item.idProducto || item.id || item.id_producto || (item.product ? (item.product.idProducto || item.product.id) : null);
-      const subtotalItem = (item.price || 0) * (item.quantity || 0);
-
-      await connection.query(
-        'INSERT INTO detallepedido (idPedido, idProducto, cantidad, precioUnitario, subtotal) VALUES (?, ?, ?, ?, ?)',
-        [orderId, productId, item.quantity, item.price || 0, subtotalItem]
-      );
-
-      await connection.query(
-        'UPDATE producto SET stock = stock - ? WHERE idProducto = ?',
-        [item.quantity, productId]
-      );
+    if (orderPayload.idCupon) {
+      await connection.query('UPDATE cupon SET vecesUsado = vecesUsado + 1 WHERE idCupon = ?', [orderPayload.idCupon]);
+      await connection.query('INSERT INTO cupon_cliente (idCupon, idCliente) VALUES (?, ?)', [orderPayload.idCupon, orderPayload.userId]);
     }
 
     await connection.commit();
 
-    if (initialStatus === 'PAGADO') {
-      try {
-        const [[order]] = await pool.query('SELECT * FROM pedido WHERE idPedido = ?', [orderId]);
-        const [details] = await pool.query(`
-          SELECT dp.*, p.nombre as producto_nombre 
-          FROM detallepedido dp 
-          JOIN producto p ON dp.idProducto = p.idProducto 
-          WHERE dp.idPedido = ?`, [orderId]);
-        const [[customer]] = await pool.query('SELECT nombre, correo, telefono FROM cliente WHERE idCliente = ?', [userId]);
-
-        const { fileName } = await generateInvoice(order, details, customer);
-
-        const [pagoRes] = await pool.query(
-          'INSERT INTO pago (idPedido, idMetodoPago, monto, estado, referenciaExterna) VALUES (?, ?, ?, ?, ?)',
-          [orderId, 1, total, 'COMPLETADO', 'STRIPE_AUTO']
-        );
-
-        await pool.query(
-          'INSERT INTO comprobantepago (idPago, tipo, monto, rutaPDF) VALUES (?, ?, ?, ?)',
-          [pagoRes.insertId, 'Boleta', total, `/uploads/invoices/${fileName}`]
-        );
-      } catch (pdfErr) {
-        console.error('Error generando boleta automática:', pdfErr);
-      }
+    if (orderStatus === 'PAGADO') {
+      await generateOrderInvoice(orderId, { referenciaExterna: 'STRIPE_AUTO' });
     }
 
-    res.status(201).json({
-      success: true,
-      message: 'Pedido creado exitosamente.',
-      data: { id: orderId }
-    });
-
+    return sendSuccess(res, { message: 'Pedido creado exitosamente.', data: { id: orderId } }, 201);
   } catch (error) {
     await connection.rollback();
-    console.error('Error al crear pedido:', error);
-    res.status(500).json({ success: false, message: 'Error al procesar el pedido: ' + error.message });
+    return handleError(res, error, `Error al procesar el pedido: ${error.message}`, 'order.createOrder');
   } finally {
     connection.release();
   }
 };
 
+exports.cancelOrder = async (req, res) => {
+  const connection = await pool.getConnection();
+  try {
+    const userId = req.user.id;
+    const orderId = req.params.id;
+
+    const order = await getOrderState(connection, orderId, userId);
+    if (!order) {
+      return sendError(res, 404, 'Pedido no encontrado.');
+    }
+
+    if (order.estado !== 'PENDIENTE') {
+      return sendError(res, 400, 'Solo se pueden cancelar pedidos en estado PENDIENTE.');
+    }
+
+    await connection.beginTransaction();
+    await connection.query('UPDATE pedido SET estado = "CANCELADO" WHERE idPedido = ?', [orderId]);
+
+    const [details] = await connection.query('SELECT idProducto, cantidad FROM detallepedido WHERE idPedido = ?', [orderId]);
+
+    for (const item of details) {
+      await connection.query('UPDATE producto SET stock = stock + ? WHERE idProducto = ?', [item.cantidad, item.idProducto]);
+    }
+
+    await connection.commit();
+    return sendSuccess(res, { message: 'Pedido cancelado y stock devuelto exitosamente.' });
+  } catch (error) {
+    await connection.rollback();
+    return handleError(res, error, 'Error al intentar cancelar el pedido.', 'order.cancelOrder');
+  } finally {
+    connection.release();
+  }
+};

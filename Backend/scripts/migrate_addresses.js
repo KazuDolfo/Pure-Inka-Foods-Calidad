@@ -2,7 +2,7 @@ const pool = require('../src/config/db');
 
 async function migrate() {
   try {
-    console.log('🚀 Actualizando tabla DireccionCliente...');
+    console.log('Actualizando tabla DireccionCliente...');
     
     const columnsToAdd = [
       { name: 'nombre_receptor', type: 'VARCHAR(150)' },
@@ -16,9 +16,9 @@ async function migrate() {
     for (const col of columnsToAdd) {
       try {
         await pool.query(`ALTER TABLE DireccionCliente ADD COLUMN ${col.name} ${col.type}`);
-        console.log(`✅ Columna ${col.name} añadida.`);
+        console.log(`Columna ${col.name} añadida.`);
       } catch (e) {
-        console.log(`ℹ️ La columna ${col.name} ya existe o error.`);
+        console.log(`ℹLa columna ${col.name} ya existe o error.`);
       }
     }
 

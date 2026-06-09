@@ -3,24 +3,22 @@ const express = require('express');
 const router = express.Router();
 const orderController = require('../controllers/order.controller');
 const authMiddleware = require('../middleware/auth.middleware');
-const multer = require('multer');
-const path = require('path');
+const { voucherFilter, limits, buildUploadMiddleware } = require('../utils/file-upload');
 
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/comprobantes/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'comprobante-' + uniqueSuffix + path.extname(file.originalname));
-  }
+const uploadVoucher = buildUploadMiddleware({
+  destinationPath: 'public/uploads/comprobantes/',
+  filenamePrefix: 'comprobante-',
+  fieldName: 'comprobante_pago',
+  fileFilter: voucherFilter,
+  fileLimits: limits.voucher,
+  sizeErrorMessage: 'El archivo es demasiado grande. Máximo 5MB.',
 });
 
-const upload = multer({ storage: storage });
+router.use(authMiddleware);
 
-router.get('/my-orders', authMiddleware, orderController.getMyOrders);
-router.get('/:id', authMiddleware, orderController.getOrderDetails);
-router.post('/', authMiddleware, upload.single('comprobante_pago'), orderController.createOrder);
+router.get('/my-orders', orderController.getMyOrders);
+router.get('/:id', orderController.getOrderDetails);
+router.patch('/:id/cancel', orderController.cancelOrder);
+router.post('/', uploadVoucher, orderController.createOrder);
 
 module.exports = router;

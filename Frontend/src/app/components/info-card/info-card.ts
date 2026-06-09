@@ -8,8 +8,8 @@ import { CommonModule } from '@angular/common';
   templateUrl: './info-card.html',
   styleUrl: './info-card.scss'
 })
-export class InfoCard {
-  @Input() iconClass: string = '';
-  @Input() title: string = '';
-  @Input() content: string = '';
+export class InfoCardComponent {
+  @Input() iconClass = '';
+  @Input() title = '';
+  @Input() content = '';
 }

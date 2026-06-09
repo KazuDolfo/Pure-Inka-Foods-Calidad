@@ -42,6 +42,15 @@ export class UserDataService {
     );
   }
 
+  cancelOrder(orderId: number): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(`${this.API_URL}/orders/${orderId}/cancel`, {}, { headers: this.getHeaders() }).pipe(
+      catchError(err => {
+        console.error('Error al cancelar pedido:', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
   
   getMessages(): Observable<any[]> { return new Observable(sub => sub.next([])); }
   getDistributorRequests(): Observable<any[]> { return new Observable(sub => sub.next([])); }

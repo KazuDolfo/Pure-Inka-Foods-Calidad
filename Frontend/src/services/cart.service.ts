@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { Producto, CartItem } from '../models';
 import { AuthService } from './auth/auth.service';
@@ -16,11 +16,6 @@ export class CartService {
 
   constructor() {
     this.loadCartFromStorage();
-  }
-
-  private getHeaders() {
-    const token = this.authService.getToken();
-    return { headers: new HttpHeaders().set('Authorization', `Bearer ${token}`) };
   }
 
   getCartItems = () => this.cart();
@@ -126,7 +121,7 @@ export class CartService {
     if (!this.authService.getToken()) return;
 
     try {
-      const res: any = await firstValueFrom(this.http.get(this.API_URL, this.getHeaders()));
+      const res: any = await firstValueFrom(this.http.get(this.API_URL));
       if (res.success && res.data && res.data.length > 0) {
         const serverItems: CartItem[] = res.data.map((item: any) => ({
           id: item.idProducto,
@@ -152,7 +147,7 @@ export class CartService {
     localStorage.removeItem('cart');
     
     if (this.authService.getToken()) {
-        this.http.delete(this.API_URL, this.getHeaders()).subscribe({
+        this.http.delete(this.API_URL).subscribe({
             error: (err) => console.error('Error al vaciar carrito en servidor', err)
         });
     }
@@ -178,7 +173,7 @@ export class CartService {
 
   private async syncWithServer() {
     try {
-        await firstValueFrom(this.http.post(`${this.API_URL}/sync`, { items: this.cart() }, this.getHeaders()));
+        await firstValueFrom(this.http.post(`${this.API_URL}/sync`, { items: this.cart() }));
     } catch (e) {
         console.error('Error sincronizando con servidor', e);
     }

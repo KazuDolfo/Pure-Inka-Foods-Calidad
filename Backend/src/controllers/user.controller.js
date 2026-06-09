@@ -1,169 +1,138 @@
-
 const pool = require('../config/db');
 const bcrypt = require('bcrypt');
+const {
+  sendSuccess,
+  sendError,
+  handleError,
+  hashPassword,
+} = require('../utils/controller-helpers');
+
+const PROFILE_FIELDS = 'idCliente, nombre, correo, telefono, rol, fechaRegistro';
+const ADDRESS_FIELDS = 'idDireccion, direccion, referencia, distrito, ciudad, pais, codigo_postal, tipo, nombre_receptor, telefono_receptor, esPrincipal';
+const ADDRESS_FIELDS_ALIAS = 'idDireccion, idDireccion as id_direccion, direccion, ciudad, pais, codigo_postal, tipo, nombre_receptor, telefono_receptor, distrito, referencia';
+
+function buildAddressParams(body) {
+  return [
+    body.direccion,
+    body.ciudad,
+    body.pais,
+    body.codigo_postal,
+    body.tipo,
+    body.nombre_receptor,
+    body.telefono_receptor,
+    body.distrito,
+    body.referencia,
+  ];
+}
+
+async function fetchUserById(userId) {
+  const [users] = await pool.query(`SELECT ${PROFILE_FIELDS} FROM Cliente WHERE idCliente = ?`, [userId]);
+  return users[0];
+}
 
 exports.getProfile = async (req, res) => {
   try {
     const userId = req.user.id;
+    const user = await fetchUserById(userId);
 
-    // Obtener datos del cliente
-    const [users] = await pool.query(
-      'SELECT idCliente, nombre, correo, telefono, rol, fechaRegistro FROM Cliente WHERE idCliente = ?',
-      [userId]
-    );
-
-    if (users.length === 0) {
-      return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+    if (!user) {
+      return sendError(res, 404, 'Usuario no encontrado.');
     }
 
-    const user = users[0];
-
-    // Obtener direcciones del usuario
-    const [addresses] = await pool.query(
-      'SELECT idDireccion, direccion, referencia, distrito, ciudad, pais, codigo_postal, tipo, nombre_receptor, telefono_receptor, esPrincipal FROM DireccionCliente WHERE idCliente = ?',
-      [userId]
-    );
-
+    const [addresses] = await pool.query(`SELECT ${ADDRESS_FIELDS} FROM DireccionCliente WHERE idCliente = ?`, [userId]);
     user.direcciones = addresses;
 
-    res.json({ success: true, data: user });
+    return sendSuccess(res, { data: user });
   } catch (error) {
-    console.error('Error al obtener perfil:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    return handleError(res, error, 'Error interno del servidor.', 'user.getProfile');
   }
 };
 
 exports.updateProfile = async (req, res) => {
   try {
-    const userId = req.user.id;
     const { nombre, telefono } = req.body;
 
-    await pool.query(
-      'UPDATE Cliente SET nombre = ?, telefono = ? WHERE idCliente = ?',
-      [nombre, telefono, userId]
-    );
-
-    res.json({ success: true, message: 'Perfil actualizado correctamente.' });
+    await pool.query('UPDATE Cliente SET nombre = ?, telefono = ? WHERE idCliente = ?', [nombre, telefono, req.user.id]);
+    return sendSuccess(res, { message: 'Perfil actualizado correctamente.' });
   } catch (error) {
-    console.error('Error al actualizar perfil:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    return handleError(res, error, 'Error interno del servidor.', 'user.updateProfile');
   }
 };
 
 exports.changePassword = async (req, res) => {
   try {
-    const userId = req.user.id;
     const { oldPassword, newPassword } = req.body;
 
-    const [users] = await pool.query('SELECT contrasenaHash FROM Cliente WHERE idCliente = ?', [userId]);
+    const [users] = await pool.query('SELECT contrasenaHash FROM Cliente WHERE idCliente = ?', [req.user.id]);
     const user = users[0];
 
-    const match = await bcrypt.compare(oldPassword, user.contrasenaHash);
-    if (!match) {
-      return res.status(400).json({ success: false, message: 'La contraseña actual es incorrecta.' });
+    if (!user || !(await bcrypt.compare(oldPassword, user.contrasenaHash))) {
+      return sendError(res, 400, 'La contraseña actual es incorrecta.');
     }
 
-    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
-    const newHash = await bcrypt.hash(newPassword, saltRounds);
+    const newHash = await hashPassword(newPassword);
+    await pool.query('UPDATE Cliente SET contrasenaHash = ? WHERE idCliente = ?', [newHash, req.user.id]);
 
-    await pool.query('UPDATE Cliente SET contrasenaHash = ? WHERE idCliente = ?', [newHash, userId]);
-
-    res.json({ success: true, message: 'Contraseña actualizada correctamente.' });
+    return sendSuccess(res, { message: 'Contraseña actualizada correctamente.' });
   } catch (error) {
-    console.error('Error al cambiar contraseña:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    return handleError(res, error, 'Error interno del servidor.', 'user.changePassword');
   }
 };
 
 exports.getAddresses = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const [addresses] = await pool.query(
-      'SELECT idDireccion, idDireccion as id_direccion, direccion, ciudad, pais, codigo_postal, tipo, nombre_receptor, telefono_receptor, distrito, referencia FROM DireccionCliente WHERE idCliente = ?',
-      [userId]
-    );
-    res.json({ success: true, data: addresses });
+    const [addresses] = await pool.query(`SELECT ${ADDRESS_FIELDS_ALIAS} FROM DireccionCliente WHERE idCliente = ?`, [req.user.id]);
+    return sendSuccess(res, { data: addresses });
   } catch (error) {
-    console.error('Error al obtener direcciones:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener direcciones.' });
+    return handleError(res, error, 'Error al obtener direcciones.', 'user.getAddresses');
   }
 };
 
 exports.addAddress = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { 
-      direccion, 
-      ciudad, 
-      pais, 
-      codigo_postal, 
-      tipo, 
-      nombre_receptor, 
-      telefono_receptor,
-      distrito,
-      referencia 
-    } = req.body;
+    const params = [req.user.id, ...buildAddressParams(req.body)];
 
     const [result] = await pool.query(
-      `INSERT INTO DireccionCliente (idCliente, direccion, ciudad, pais, codigo_postal, tipo, nombre_receptor, telefono_receptor, distrito, referencia) 
+      `INSERT INTO DireccionCliente (idCliente, direccion, ciudad, pais, codigo_postal, tipo, nombre_receptor, telefono_receptor, distrito, referencia)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [userId, direccion, ciudad, pais, codigo_postal, tipo, nombre_receptor, telefono_receptor, distrito, referencia]
+      params
     );
 
-    const newAddressId = result.insertId;
-    const [newAddress] = await pool.query('SELECT *, idDireccion as id_direccion FROM DireccionCliente WHERE idDireccion = ?', [newAddressId]);
+    const [newAddress] = await pool.query(`SELECT *, idDireccion as id_direccion FROM DireccionCliente WHERE idDireccion = ?`, [result.insertId]);
 
-    res.status(201).json({ 
-      success: true, 
-      data: newAddress[0], 
-      message: 'Dirección añadida exitosamente.' 
-    });
+    return sendSuccess(res, {
+      data: newAddress[0],
+      message: 'Dirección añadida exitosamente.',
+    }, 201);
   } catch (error) {
-    console.error('Error al añadir dirección:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    return handleError(res, error, 'Error interno del servidor.', 'user.addAddress');
   }
 };
 
 exports.updateAddress = async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { id } = req.params;
-      const { 
-        direccion, 
-        ciudad, 
-        pais, 
-        codigo_postal, 
-        tipo, 
-        nombre_receptor, 
-        telefono_receptor,
-        distrito,
-        referencia 
-      } = req.body;
-  
-      await pool.query(
-        `UPDATE DireccionCliente 
-         SET direccion = ?, ciudad = ?, pais = ?, codigo_postal = ?, tipo = ?, nombre_receptor = ?, telefono_receptor = ?, distrito = ?, referencia = ? 
-         WHERE idDireccion = ? AND idCliente = ?`,
-        [direccion, ciudad, pais, codigo_postal, tipo, nombre_receptor, telefono_receptor, distrito, referencia, id, userId]
-      );
-  
-      res.json({ success: true, message: 'Dirección actualizada correctamente.' });
-    } catch (error) {
-      console.error('Error al actualizar dirección:', error);
-      res.status(500).json({ success: false, message: 'Error interno del servidor.' });
-    }
-  };
+  try {
+    const addressId = req.params.id;
+    const params = [...buildAddressParams(req.body), addressId, req.user.id];
+
+    await pool.query(
+      `UPDATE DireccionCliente
+       SET direccion = ?, ciudad = ?, pais = ?, codigo_postal = ?, tipo = ?, nombre_receptor = ?, telefono_receptor = ?, distrito = ?, referencia = ?
+       WHERE idDireccion = ? AND idCliente = ?`,
+      params
+    );
+
+    return sendSuccess(res, { message: 'Dirección actualizada correctamente.' });
+  } catch (error) {
+    return handleError(res, error, 'Error interno del servidor.', 'user.updateAddress');
+  }
+};
 
 exports.deleteAddress = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { id } = req.params;
-
-    await pool.query('DELETE FROM DireccionCliente WHERE idDireccion = ? AND idCliente = ?', [id, userId]);
-
-    res.json({ success: true, message: 'Dirección eliminada.' });
+    const addressId = req.params.id;
+    await pool.query('DELETE FROM DireccionCliente WHERE idDireccion = ? AND idCliente = ?', [addressId, req.user.id]);
+    return sendSuccess(res, { message: 'Dirección eliminada.' });
   } catch (error) {
-    console.error('Error al eliminar dirección:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    return handleError(res, error, 'Error interno del servidor.', 'user.deleteAddress');
   }
 };

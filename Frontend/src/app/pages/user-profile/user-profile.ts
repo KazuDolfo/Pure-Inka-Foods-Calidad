@@ -41,6 +41,8 @@ interface OrderSummary extends Pedido {
   error?: string;
   detailsLoaded?: boolean;
   boleta_url?: string;
+  comprobantePago?: string;
+  comprobante_pago?: string;
 }
 
 interface ChangePasswordRequest {
@@ -57,7 +59,7 @@ interface ChangePasswordRequest {
 })
 export class UserProfile implements OnInit {
 
-  activeTab: 'profile' | 'orders' | 'addresses' = 'profile';
+  activeTab: 'profile' | 'orders' | 'addresses' | 'tickets' = 'profile';
 
   userOrders: OrderSummary[] = [];
 
@@ -77,6 +79,19 @@ export class UserProfile implements OnInit {
   errorMessage: string | null = null;
 
   ordersError: string | null = null;
+
+  tickets: any[] = [];
+  ticketsLoading = false;
+  ticketsError: string | null = null;
+
+  newTicket = {
+    asunto: '',
+    descripcion: '',
+    categoria: 'Soporte Técnico'
+  };
+  isSubmittingTicket = false;
+  ticketMessage: string | null = null;
+  ticketMessageType: 'success' | 'error' | null = null;
 
   showPasswordModal = false;
   passwordData = {
@@ -122,13 +137,65 @@ export class UserProfile implements OnInit {
     this.setActiveTab('profile');
   }
 
-  setActiveTab(tab: 'profile' | 'orders' | 'addresses'): void {
+  setActiveTab(tab: 'profile' | 'orders' | 'addresses' | 'tickets'): void {
     this.activeTab = tab;
     this.errorMessage = null;
 
     if (tab === 'orders' && this.userOrders.length === 0) {
       this.loadOrders();
+    } else if (tab === 'tickets') {
+      this.loadTickets();
     }
+  }
+
+  loadTickets(): void {
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    this.ticketsLoading = true;
+    this.ticketsError = null;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    this.http.get<any>('http://localhost:5000/api/tickets/my-tickets', { headers }).subscribe({
+      next: (res) => {
+        this.tickets = res.data || [];
+        this.ticketsLoading = false;
+      },
+      error: (err) => {
+        this.ticketsError = err.error?.message || 'Error al cargar los tickets.';
+        this.ticketsLoading = false;
+      }
+    });
+  }
+
+  submitTicket(): void {
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    if (!this.newTicket.asunto || !this.newTicket.descripcion) {
+      this.ticketMessage = 'Por favor completa todos los campos.';
+      this.ticketMessageType = 'error';
+      return;
+    }
+
+    this.isSubmittingTicket = true;
+    this.ticketMessage = null;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    this.http.post<any>('http://localhost:5000/api/tickets', this.newTicket, { headers }).subscribe({
+      next: (res) => {
+        this.isSubmittingTicket = false;
+        this.ticketMessage = 'Ticket creado exitosamente.';
+        this.ticketMessageType = 'success';
+        this.newTicket = { asunto: '', descripcion: '', categoria: 'Soporte Técnico' };
+        this.loadTickets();
+      },
+      error: (err) => {
+        this.isSubmittingTicket = false;
+        this.ticketMessage = err.error?.message || 'Error al enviar el ticket.';
+        this.ticketMessageType = 'error';
+      }
+    });
   }
 
   loadOrders(): void {
@@ -163,6 +230,24 @@ export class UserProfile implements OnInit {
         }
       });
     }
+  }
+
+  cancelOrder(id: number): void {
+    if (!confirm('¿Estás seguro de que deseas cancelar este pedido? Esta acción devolverá los productos al stock.')) {
+      return;
+    }
+
+    this.userDataService.cancelOrder(id).subscribe({
+      next: (res) => {
+        if (res.success) {
+          alert('Pedido cancelado correctamente.');
+          this.loadOrders(); // Recargar la lista para ver el cambio de estado
+        }
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Error al cancelar el pedido.');
+      }
+    });
   }
 
   loadUserProfile(): void {

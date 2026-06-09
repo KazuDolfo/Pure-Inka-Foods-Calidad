@@ -12,18 +12,18 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './top-bar.html',
   styleUrl: './top-bar.scss'
 })
-export class TopBar {
+export class TopBarComponent {
   cartItems = computed(() => this.cartService.getCartItems());
+
   cartItemCount = computed(() =>
-    this.cartService.getCartItems().reduce((sum, item) => sum + item.quantity, 0)
+    this.cartItems().reduce((sum, item) => sum + item.quantity, 0)
   );
+
   cartTotal = computed(() =>
-    this.cartService.getCartItems().reduce((sum, item) => sum + item.price * item.quantity, 0)
+    this.cartItems().reduce((sum, item) => sum + item.price * item.quantity, 0)
   );
 
-  
   aggregatedCartItems = computed(() => this.cartService.getAggregatedItems());
-
   isAuthenticated = computed(() => this.authService.isAuthenticatedUser());
   isDistributor = computed(() => this.authService.getCurrentUser()?.rol === 'distribuidor');
   showCartDropdown = signal(false);
@@ -40,58 +40,73 @@ export class TopBar {
     });
   }
 
-  toggleCartDropdown() {
+  private findCartItem(itemId: number) {
+    return this.cartItems().find(item => item.id === itemId);
+  }
+
+  toggleCartDropdown(): void {
     this.showCartDropdown.set(!this.showCartDropdown());
   }
 
-  closeCartDropdown() {
+  closeCartDropdown(): void {
     this.showCartDropdown.set(false);
   }
 
-  logout() {
+  logout(): void {
     this.authService.logout();
     this.router.navigate(['/auth']);
   }
 
-  removeItem(itemId: number) {
+  removeItem(itemId: number): void {
     this.cartService.removeFromCart(itemId);
   }
 
-  increaseQuantity(itemId: number) {
-    const item = this.cartService.getCartItems().find(i => i.id === itemId);
-    if (item) this.cartService.updateQuantity(itemId, item.quantity + 1);
+  increaseQuantity(itemId: number): void {
+    const item = this.findCartItem(itemId);
+    if (item) {
+      this.cartService.updateQuantity(itemId, item.quantity + 1);
+    }
   }
 
-  decreaseQuantity(itemId: number) {
-    const item = this.cartService.getCartItems().find(i => i.id === itemId);
-    if (item && item.quantity > 1) {
+  decreaseQuantity(itemId: number): void {
+    const item = this.findCartItem(itemId);
+    if (!item) {
+      return;
+    }
+
+    if (item.quantity > 1) {
       this.cartService.updateQuantity(itemId, item.quantity - 1);
-    } else if (item && item.quantity === 1) {
+    } else {
       this.removeItem(itemId);
     }
   }
 
-  get formattedCartTotal() {
+  get formattedCartTotal(): string {
     return `S/. ${this.cartTotal().toFixed(2)}`;
   }
 
-  
-  getImageUrl(image?: string): string {
-    if (!image) return 'assets/pure-inka-logo.png';
-
-    
-    if (image.startsWith('http')) return image;
-
-    
-    if (image.includes('assets/')) return image;
-
-    
-    if (!image.includes('/')) {
-        return `http://localhost:5000/uploads/products/${image}`;
+  private normalizeImageUrl(image?: string): string {
+    if (!image) {
+      return 'assets/pure-inka-logo.png';
     }
 
-    
+    if (image.startsWith('http')) {
+      return image;
+    }
+
+    if (image.includes('assets/')) {
+      return image;
+    }
+
+    if (!image.includes('/')) {
+      return `http://localhost:5000/uploads/products/${image}`;
+    }
+
     return `assets/${image}`;
+  }
+
+  getImageUrl(image?: string): string {
+    return this.normalizeImageUrl(image);
   }
 
   onImageError(event: any): void {

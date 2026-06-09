@@ -2,27 +2,24 @@ const express = require('express');
 const router = express.Router();
 const paymentMethodController = require('../controllers/payment-method.controller');
 const authMiddleware = require('../middleware/auth.middleware');
-const multer = require('multer');
-const path = require('path');
+const { imageFilter, limits, buildUploadMiddleware } = require('../utils/file-upload');
 
-// Configuración de almacenamiento para QR
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/products/'); // Usamos la misma carpeta de productos por simplicidad o una nueva
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'qr-' + uniqueSuffix + path.extname(file.originalname));
-  }
+const uploadQrImage = buildUploadMiddleware({
+  destinationPath: 'public/uploads/products/',
+  filenamePrefix: 'qr-',
+  fieldName: 'imagen_qr',
+  fileFilter: imageFilter,
+  fileLimits: limits.product,
+  sizeErrorMessage: 'La imagen del QR es demasiado grande. Máximo 2MB.',
 });
-
-const upload = multer({ storage: storage });
 
 router.get('/active', paymentMethodController.getActiveMethods);
 
-router.get('/', authMiddleware, paymentMethodController.getAllMethods);
-router.post('/', authMiddleware, upload.single('imagen_qr'), paymentMethodController.createMethod);
-router.put('/:id', authMiddleware, upload.single('imagen_qr'), paymentMethodController.updateMethod);
-router.delete('/:id', authMiddleware, paymentMethodController.deleteMethod);
+router.use(authMiddleware);
+
+router.get('/', paymentMethodController.getAllMethods);
+router.post('/', uploadQrImage, paymentMethodController.createMethod);
+router.put('/:id', uploadQrImage, paymentMethodController.updateMethod);
+router.delete('/:id', paymentMethodController.deleteMethod);
 
 module.exports = router;

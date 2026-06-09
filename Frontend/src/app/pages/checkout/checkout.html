@@ -185,19 +185,21 @@
                                 @for (opt of filteredShippingOptions(); track opt.id) {
                                     <div class="col-md-6">
                                         <label class="list-group-item d-flex justify-content-between align-items-center p-3 border rounded-3 shadow-sm h-100"
-                                            [class.border-success]="selectedShipping() === (opt.costo || opt.cost)"
-                                            [class.bg-light-green]="selectedShipping() === (opt.costo || opt.cost)"
+                                            [class.border-success]="selectedShippingId() === (opt.id || opt.idTipoEntrega)"
+                                            [class.bg-light-green]="selectedShippingId() === (opt.id || opt.idTipoEntrega)"
                                             style="cursor: pointer; background-color: white;">
                                             <div class="d-flex align-items-center">
-                                                <input type="radio" name="shipping" [value]="opt.costo || opt.cost"
-                                                    [checked]="selectedShipping() === (opt.costo || opt.cost)" (change)="onShippingChange($event, opt)"
+                                                <input type="radio" name="shipping" [value]="(opt.costo !== undefined && opt.costo !== null) ? opt.costo : opt.cost"
+                                                    [checked]="selectedShippingId() === (opt.id || opt.idTipoEntrega)" (change)="onShippingChange($event, opt)"
                                                     class="form-check-input me-3">
                                                 <div>
                                                     <h6 class="mb-0 fw-bold text-dark">{{ opt.nombre || opt.name }}</h6>
                                                     <small class="text-muted d-block">{{ opt.desc || 'Entrega estándar' }}</small>
                                                 </div>
                                             </div>
-                                            <span class="fw-bold text-success">S/. {{ (opt.costo || opt.cost || 0).toFixed(2) }}</span>
+                                            <span class="fw-bold text-success">
+                                                {{ (opt.costo || opt.cost) > 0 ? 'S/. ' + (opt.costo || opt.cost || 0).toFixed(2) : 'Gratis' }}
+                                            </span>
                                         </label>
                                     </div>
                                 }
@@ -324,6 +326,33 @@
                                     </div>
                                 }
 
+                                <!-- Selección de Comprobante -->
+                                <div class="mb-4 border-top pt-4">
+                                    <h6 class="fw-bold mb-3 text-primary"><i class="bi bi-file-earmark-text me-2"></i>Tipo de Comprobante:</h6>
+                                    <div class="d-flex gap-4 mb-3">
+                                        <div class="form-check custom-radio">
+                                            <input class="form-check-input" type="radio" name="tipoComprobante" id="boleta" 
+                                                   [checked]="tipoComprobante() === 'BOLETA'" (change)="onComprobanteChange('BOLETA')">
+                                            <label class="form-check-label fw-bold" for="boleta">Boleta de Venta</label>
+                                        </div>
+                                        <div class="form-check custom-radio">
+                                            <input class="form-check-input" type="radio" name="tipoComprobante" id="factura" 
+                                                   [checked]="tipoComprobante() === 'FACTURA'" (change)="onComprobanteChange('FACTURA')">
+                                            <label class="form-check-label fw-bold" for="factura">Factura (con RUC)</label>
+                                        </div>
+                                    </div>
+                                    
+                                    @if (tipoComprobante() === 'FACTURA' && ruc()) {
+                                        <div class="alert alert-info py-2 px-3 small d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <i class="bi bi-check-circle-fill me-2 text-success"></i>
+                                                <strong>Factura lista:</strong> {{ ruc() }} - {{ razonSocial() }}
+                                            </span>
+                                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" (click)="showFacturaModal.set(true)">Editar</button>
+                                        </div>
+                                    }
+                                </div>
+
                                 <div class="d-flex justify-content-between mt-5">
                                     <button type="button" class="btn btn-outline-secondary" (click)="prevStep()">
                                         <i class="bi bi-arrow-left me-2"></i> Volver a Envío
@@ -361,6 +390,38 @@
                     }
                 </ul>
 
+                <!-- Cupón de Descuento -->
+                <div class="mb-4 mt-3">
+                    <label class="form-label small fw-bold text-muted">¿Tienes un cupón de descuento?</label>
+                    @if (!appliedCoupon()) {
+                        <div class="input-group">
+                            <input type="text" class="form-control form-control-sm text-uppercase" 
+                                   placeholder="Ej: INKA10" [ngModel]="couponCode()" (ngModelChange)="couponCode.set($event)">
+                            <button class="btn btn-outline-success btn-sm fw-bold" type="button" 
+                                    (click)="applyCoupon()" [disabled]="isApplyingCoupon() || !couponCode()">
+                                @if (isApplyingCoupon()) {
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                } @else {
+                                    APLICAR
+                                }
+                            </button>
+                        </div>
+                        @if (couponError()) {
+                            <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1"></i>{{ couponError() }}</div>
+                        }
+                    } @else {
+                        <div class="d-flex justify-content-between align-items-center bg-light border border-success p-2 rounded">
+                            <div>
+                                <span class="badge bg-success me-2">{{ appliedCoupon().codigo }}</span>
+                                <span class="small text-success fw-bold">Cupón aplicado</span>
+                            </div>
+                            <button type="button" class="btn btn-sm text-danger p-0 border-0 bg-transparent" (click)="removeCoupon()">
+                                <i class="bi bi-trash-fill fs-6"></i>
+                            </button>
+                        </div>
+                    }
+                </div>
+
                 <ul class="list-group list-group-flush summary-totals">
                     <li class="list-group-item d-flex justify-content-between px-0 py-2">
                         <span>Subtotal</span>
@@ -368,8 +429,16 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between px-0 py-2">
                         <span>Envío</span>
-                        <span class="fw-bold text-success">S/. {{ selectedShipping() | number:'1.2-2' }}</span>
+                        <span class="fw-bold text-success">
+                            {{ selectedShipping() === -1 ? 'Por calcular' : 'S/. ' + (selectedShipping() | number:'1.2-2') }}
+                        </span>
                     </li>
+                    @if (couponDiscount() > 0) {
+                        <li class="list-group-item d-flex justify-content-between px-0 py-2 text-success">
+                            <span>Descuento ({{ appliedCoupon()?.codigo }})</span>
+                            <span class="fw-bold">- S/. {{ couponDiscount() | number:'1.2-2' }}</span>
+                        </li>
+                    }
                     <li class="list-group-item d-flex justify-content-between px-0 pt-3 pb-0 border-top mt-2">
                         <span class="h5 fw-bolder text-inkapt-dark">Total</span>
                         <span class="h5 fw-bolder text-inkapt-dark">S/. {{ total() | number:'1.2-2' }}</span>
@@ -384,6 +453,35 @@
                         <p class="small mb-0 text-muted">{{ shippingData.country }} ({{ shippingData.zipCode }})</p>
                     </div>
                 }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Datos de Factura -->
+<div class="modal-backdrop fade show" *ngIf="showFacturaModal()"></div>
+<div class="modal fade show d-block" *ngIf="showFacturaModal()" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-text me-2"></i>Datos para Factura</h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeFacturaModal()"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">RUC (11 dígitos)</label>
+                    <input type="text" class="form-control" [value]="ruc()" (input)="onRucInput($event)" 
+                           maxlength="11" placeholder="Ej. 20123456789">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Razón Social</label>
+                    <input type="text" class="form-control" [value]="razonSocial()" (input)="onRazonSocialInput($event)" 
+                           placeholder="Nombre de la empresa">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" (click)="closeFacturaModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary px-4" (click)="saveFacturaData()">Guardar Datos</button>
             </div>
         </div>
     </div>

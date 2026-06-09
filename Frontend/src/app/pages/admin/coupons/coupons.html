@@ -1,0 +1,133 @@
+<div class="container-fluid py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Gestión de Cupones</h1>
+      <p class="text-muted mb-0">Crea, activa o desactiva cupones de descuento para la tienda</p>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i>{{ successMessage() }}
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage() }}
+    </div>
+  }
+
+  <div class="row g-4">
+    <!-- Formulario para agregar cupón -->
+    <div class="col-xl-4">
+      <div class="card border-0 shadow-sm p-4">
+        <h3 class="h5 fw-bold text-dark mb-4"><i class="bi bi-plus-circle me-2 text-success"></i>Nuevo Cupón</h3>
+        
+        <form (ngSubmit)="createCoupon()">
+          <div class="mb-3">
+            <label for="couponCode" class="form-label fw-bold small text-muted">Código del Cupón</label>
+            <input type="text" id="couponCode" name="couponCode" class="form-control text-uppercase" 
+                   [(ngModel)]="newCode" placeholder="Ej: INKA20" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="couponType" class="form-label fw-bold small text-muted">Tipo de Descuento</label>
+            <select id="couponType" name="couponType" class="form-select" [(ngModel)]="newType">
+              <option value="porcentaje">Porcentaje (%)</option>
+              <option value="fijo">Monto Fijo (S/.)</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="couponValue" class="form-label fw-bold small text-muted">Valor</label>
+            <input type="number" id="couponValue" name="couponValue" class="form-control" 
+                   [(ngModel)]="newValue" min="0.1" step="0.1" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="couponExpiry" class="form-label fw-bold small text-muted">Fecha de Expiración</label>
+            <input type="datetime-local" id="couponExpiry" name="couponExpiry" class="form-control" 
+                   [(ngModel)]="newExpiryDate" required>
+          </div>
+
+          <div class="mb-4">
+            <label for="couponLimit" class="form-label fw-bold small text-muted">Límite de Usos Totales</label>
+            <input type="number" id="couponLimit" name="couponLimit" class="form-control" 
+                   [(ngModel)]="newLimit" min="1" required>
+          </div>
+
+          <button type="submit" class="btn btn-success fw-bold w-100 py-2.5" [disabled]="isSaving() || !newCode">
+            @if (isSaving()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>Registrando...
+            } @else {
+              <i class="bi bi-save me-2"></i>CREAR CUPÓN
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Listado de cupones -->
+    <div class="col-xl-8">
+      <div class="card border-0 shadow-sm p-4">
+        <h3 class="h5 fw-bold text-dark mb-4"><i class="bi bi-list-ul me-2 text-primary"></i>Cupones Registrados</h3>
+
+        @if (isLoading()) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">Cargando cupones...</p>
+          </div>
+        } @else if (coupons().length === 0) {
+          <div class="text-center py-5">
+            <i class="bi bi-tags fs-1 text-muted mb-3 d-block"></i>
+            <p class="lead text-muted">No hay cupones registrados aún.</p>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Código</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Valor</th>
+                  <th scope="col" class="text-center">Usos</th>
+                  <th scope="col">Expira</th>
+                  <th scope="col" class="text-center">Estado</th>
+                  <th scope="col" class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (c of coupons(); track c.idCupon) {
+                  <tr>
+                    <td><strong class="text-dark">{{ c.codigo }}</strong></td>
+                    <td>
+                      <span class="badge" [class.bg-info-subtle]="c.tipo === 'porcentaje'" [class.text-info]="c.tipo === 'porcentaje'" [class.bg-warning-subtle]="c.tipo === 'fijo'" [class.text-warning]="c.tipo === 'fijo'">
+                        {{ c.tipo === 'porcentaje' ? 'Porcentaje' : 'Fijo' }}
+                      </span>
+                    </td>
+                    <td>{{ c.tipo === 'porcentaje' ? c.valor + '%' : 'S/. ' + c.valor }}</td>
+                    <td class="text-center">
+                      <span class="fw-semibold">{{ c.vecesUsado }}</span> <span class="text-muted">/ {{ c.limiteUso }}</span>
+                    </td>
+                    <td>{{ c.fechaExpiracion | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td class="text-center">
+                      <span class="badge" [class.bg-success]="c.activo == 1" [class.bg-danger]="c.activo == 0">
+                        {{ c.activo == 1 ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-sm" [class.btn-outline-danger]="c.activo == 1" [class.btn-outline-success]="c.activo == 0" (click)="toggleStatus(c)">
+                        <i class="bi" [class.bi-toggle-off]="c.activo == 1" [class.bi-toggle-on]="c.activo == 0"></i>
+                        {{ c.activo == 1 ? ' Desactivar' : ' Activar' }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

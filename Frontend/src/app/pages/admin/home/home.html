@@ -1,6 +1,6 @@
 <div class="container-fluid py-4">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+        <h1 class="h3 mb-0 text-gray-800">Dashboard de Ventas</h1>
         <div class="d-flex gap-2">
             <select class="form-select form-select-sm shadow-sm" style="width: auto;" 
                     [(ngModel)]="selectedPeriod" (change)="onPeriodChange()">
@@ -25,17 +25,61 @@
     </div>
 
     <div *ngIf="stats && !loading">
+        
+        <!-- Alertas de Stock Crítico -->
+        <div class="row mb-4" *ngIf="stats.lowStockProducts?.length > 0">
+            <div class="col-12">
+                <div class="card border-start-danger shadow py-2">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 me-3">
+                                <i class="bi bi-exclamation-triangle-fill fs-2 text-danger"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold text-danger mb-1">¡Alerta de Inventario Crítico!</h6>
+                                <p class="mb-0 text-muted small">
+                                    Los siguientes productos tienen menos de 5 unidades: 
+                                    <span *ngFor="let p of stats.lowStockProducts; let last = last" class="fw-bold text-dark">
+                                        {{ p.nombre }} ({{ p.stock }}){{ last ? '' : ', ' }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="ms-auto">
+                                <a routerLink="/admin/products" class="btn btn-sm btn-danger px-3">Reponer Stock</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas de KPIs Maestros -->
         <div class="row">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs fw-bold text-success text-uppercase mb-1">Ingresos Netos</div>
+                                <div class="h5 mb-0 fw-bold text-gray-800">S/. {{ stats.metrics.totalRevenue | number:'1.2-2' }}</div>
+                                <div class="text-muted extra-small">Solo pedidos pagados/enviados</div>
+                            </div>
+                            <div class="col-auto"><i class="bi bi-currency-dollar fs-2 text-gray-300"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="col-xl-3 col-md-6 mb-4">
                 <div class="card border-start-primary shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs fw-bold text-primary text-uppercase mb-1">Ingresos Totales</div>
-                                <div class="h5 mb-0 fw-bold text-gray-800">S/. {{ stats.totalRevenue | number:'1.2-2'
-                                    }}</div>
+                                <div class="text-xs fw-bold text-primary text-uppercase mb-1">Ticket Promedio</div>
+                                <div class="h5 mb-0 fw-bold text-gray-800">S/. {{ stats.metrics.avgOrderValue | number:'1.2-2' }}</div>
+                                <div class="text-muted extra-small">Gasto promedio por cliente</div>
                             </div>
-                            <div class="col-auto"><i class="bi bi-cash-coin fs-2 text-gray-300"></i></div>
+                            <div class="col-auto"><i class="bi bi-graph-up-arrow fs-2 text-gray-300"></i></div>
                         </div>
                     </div>
                 </div>
@@ -46,10 +90,11 @@
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs fw-bold text-warning text-uppercase mb-1">Pedidos Pendientes</div>
-                                <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.pendingOrders }}</div>
+                                <div class="text-xs fw-bold text-warning text-uppercase mb-1">Pendientes de Pago</div>
+                                <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.metrics.pendingOrders }}</div>
+                                <div class="text-muted extra-small">Vouchers por validar</div>
                             </div>
-                            <div class="col-auto"><i class="bi bi-clock fs-2 text-gray-300"></i></div>
+                            <div class="col-auto"><i class="bi bi-qr-code-scan fs-2 text-gray-300"></i></div>
                         </div>
                     </div>
                 </div>
@@ -60,24 +105,11 @@
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col mr-2">
-                                <div class="text-xs fw-bold text-info text-uppercase mb-1">Productos</div>
-                                <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.totalProducts }}</div>
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">Crecimiento (Nuevos)</div>
+                                <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.metrics.newUsers }}</div>
+                                <div class="text-muted extra-small">Usuarios en últimos {{ selectedPeriod }} días</div>
                             </div>
-                            <div class="col-auto"><i class="bi bi-box-seam fs-2 text-gray-300"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-start-success shadow h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs fw-bold text-success text-uppercase mb-1">Usuarios</div>
-                                <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.totalUsers }}</div>
-                            </div>
-                            <div class="col-auto"><i class="bi bi-people fs-2 text-gray-300"></i></div>
+                            <div class="col-auto"><i class="bi bi-person-plus fs-2 text-gray-300"></i></div>
                         </div>
                     </div>
                 </div>
@@ -85,11 +117,15 @@
         </div>
 
         <div class="row">
+            <!-- Gráfico Lineal de Ventas -->
             <div class="col-xl-8 col-lg-7">
                 <div class="card shadow mb-4">
-                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Evolución de Ventas</h6></div>
+                    <div class="card-header py-3 d-flex justify-content-between">
+                        <h6 class="m-0 fw-bold text-primary">Evolución de Ingresos</h6>
+                        <span class="badge bg-success-soft text-success">Crecimiento Diario</span>
+                    </div>
                     <div class="card-body">
-                        <div class="chart-area">
+                        <div class="chart-area" style="height: 320px;">
                             <canvas baseChart [data]="salesChartData" [options]="salesChartOptions"
                                 [type]="salesChartType"></canvas>
                         </div>
@@ -97,13 +133,17 @@
                 </div>
             </div>
 
+            <!-- Gráfico de Métodos de Pago (Toma de Decisiones) -->
             <div class="col-xl-4 col-lg-5">
                 <div class="card shadow mb-4">
-                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Estado de Pedidos</h6></div>
+                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Canales de Pago</h6></div>
                     <div class="card-body">
-                        <div class="chart-pie pt-4 pb-2">
-                            <canvas baseChart [data]="statusChartData" [options]="statusChartOptions"
-                                [type]="statusChartType"></canvas>
+                        <div class="chart-pie pt-4 pb-2" style="height: 320px;">
+                            <canvas baseChart [data]="paymentChartData" [options]="paymentChartOptions"
+                                [type]="paymentChartType"></canvas>
+                        </div>
+                        <div class="text-center small mt-3">
+                            ¿Dónde prefieren pagar tus clientes?
                         </div>
                     </div>
                 </div>
@@ -111,11 +151,12 @@
         </div>
 
         <div class="row">
+            <!-- Top Productos (Ventas) -->
             <div class="col-xl-6 col-lg-6">
                 <div class="card shadow mb-4">
-                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Top 5 Productos Vendidos</h6></div>
+                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Los 5 Más Vendidos</h6></div>
                     <div class="card-body">
-                        <div class="chart-area">
+                        <div class="chart-area" style="height: 300px;">
                             <canvas baseChart [data]="topProductsChartData" [options]="topProductsChartOptions"
                                 [type]="topProductsChartType"></canvas>
                         </div>
@@ -123,13 +164,14 @@
                 </div>
             </div>
 
+            <!-- Estado de la Operación -->
             <div class="col-xl-6 col-lg-6">
                 <div class="card shadow mb-4">
-                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Ventas por Categoría</h6></div>
+                    <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Salud Operativa (Pedidos)</h6></div>
                     <div class="card-body">
-                        <div class="chart-pie pt-4 pb-2">
-                            <canvas baseChart [data]="categoryChartData" [options]="categoryChartOptions"
-                                [type]="categoryChartType"></canvas>
+                        <div class="chart-pie pt-4 pb-2" style="height: 300px;">
+                            <canvas baseChart [data]="statusChartData" [options]="statusChartOptions"
+                                [type]="statusChartType"></canvas>
                         </div>
                     </div>
                 </div>

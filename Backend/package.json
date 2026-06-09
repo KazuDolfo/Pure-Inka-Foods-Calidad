@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "build": "echo 'Backend is pure JS, no build needed. Preparing for production...'",
     "prod": "NODE_ENV=production node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "keywords": [
     "angular",
@@ -30,6 +30,7 @@
     "express": "^4.19.2",
     "express-async-handler": "^1.2.0",
     "express-list-endpoints": "^7.1.1",
+    "express-rate-limit": "^8.5.2",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
@@ -37,7 +38,10 @@
     "mysql2": "^3.11.0",
     "nodemailer": "^8.0.7",
     "pdfkit": "^0.18.0",
-    "stripe": "^20.0.0"
+    "sharp": "^0.34.5",
+    "stripe": "^20.0.0",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "jest": "^30.4.2",

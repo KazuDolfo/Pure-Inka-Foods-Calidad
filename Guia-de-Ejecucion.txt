@@ -1,63 +1,37 @@
-============================================================
-       GUÍA DE EJECUCIÓN - PURE INKA E-COMMERCE
-============================================================
 
-Este documento proporciona las instrucciones necesarias para configurar y 
-ejecutar el proyecto PURE INKA E-COMMERCE (Backend y Frontend).
+   GUÍA DE EJECUCIÓN TÉCNICA - PURE INKA FOODS
+   -------------------------------------------
 
-------------------------------------------------------------
-1. REQUISITOS PREVIOS
-------------------------------------------------------------
-Antes de comenzar, asegúrese de tener instalado lo siguiente:
-- Node.js (Versión recomendada: 18 o superior)
-  Descargar: https://nodejs.org/
-- MySQL Server (Versión 8.0 o superior)
-- MySQL Workbench u otro cliente SQL (Opcional, para ejecutar los scripts)
+   [ 1. PRE-REQUISITOS ]
+   * Node.js v18.0 o superior instalado.
+   * MySQL Server v8.0 en ejecución.
+   * Navegador moderno (Brave, Firefox, Chrome).
 
-------------------------------------------------------------
-2. CONFIGURACIÓN DE LA BASE DE DATOS
-------------------------------------------------------------
-1. Inicie su servidor MySQL.
-2. Ejecute los scripts SQL situados en la raíz del proyecto en el siguiente orden:
-   a. DDL-2.sql (Crea la base de datos 'PureInkaFoodsDB' y sus tablas).
-   b. DML-v1-InkaFood.sql (Inserta los datos iniciales y categorías).
 
-------------------------------------------------------------
-3. CONFIGURACIÓN DEL BACKEND
-------------------------------------------------------------
-1. Abra una terminal en la carpeta 'Backend'.
-2. Instale las dependencias:
-   npm install
+   [ 2. PUESTA EN MARCHA DE BASE DE DATOS ]
+   Ejecute los archivos SQL en este orden estricto:
+   
+   1. DDL-2.sql           (Estructura, Índices y Seguridad)
+   2. DML-v1-InkaFood.sql (Datos de catálogo y categorías)
 
-3. Configure las variables de entorno:
-   - Abra el archivo '.env' en la carpeta 'Backend'.
-   - Ajuste 'DB_USER' (usuario) y 'DB_PASS' (contraseña) según su configuración local de MySQL.
-   - Verifique que 'DB_NAME' sea 'PureInkaFoodsDB'.
-   - También revise 'Backend\src\config\db.js' para asegurar que los parámetros coincidan.
 
-4. Inicie el servidor:
-   npm run dev  (Para modo desarrollo con nodemon)
-   o
-   npm start    (Para ejecución normal)
+   [ 3. INICIO DEL SERVIDOR (BACKEND) ]
+   1. Ingrese a la carpeta 'Backend'.
+   2. Ejecute: npm install
+   3. Configure el archivo '.env':
+      - DB_PASS = [Su contraseña de MySQL]
+      - JWT_SECRET = [Cualquier clave secreta]
+   4. Inicie el servidor: npm run dev
 
-El servidor estará escuchando por defecto en: http://localhost:5000
 
-------------------------------------------------------------
-4. CONFIGURACIÓN DEL FRONTEND
-------------------------------------------------------------
-1. Abra una terminal en la carpeta 'Frontend'.
-2. Instale las dependencias:
-   npm install
+   [ 4. INICIO DE LA WEB (FRONTEND) ]
+   1. Ingrese a la carpeta 'Frontend'.
+   2. Ejecute: npm install
+   3. Inicie la aplicación: npm start
+   4. Acceda a: http://localhost:4200
 
-3. Inicie la aplicación Angular:
-   npm start
 
-4. Acceda a la aplicación en su navegador:
-   http://localhost:4200
-
-------------------------------------------------------------
-NOTAS ADICIONALES:
-- Si cambia el puerto del Backend en el .env, asegúrese de actualizar la URL 
-  en el Frontend para mantener la comunicación.
-- Para pruebas de pago, el sistema utiliza Stripe en modo test.
-============================================================
+   [ 5. VALIDACIÓN DE CALIDAD ]
+   - Pruebas Backend : En /Backend ejecute 'npm test'
+   - Pruebas Frontend: En /Frontend ejecute 'ng test'
+   - Salud Sistema  : Visite http://localhost:5000/api/health

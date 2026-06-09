@@ -1,6 +1,6 @@
 
-import { Component, Input, computed } from '@angular/core';
-import { CommonModule, NgClass } from '@angular/common';
+import { Component, Input, Output, EventEmitter, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Producto } from '../../../models';
 import { CartService } from '../../../services/cart.service';
 
@@ -11,57 +11,74 @@ import { CartService } from '../../../services/cart.service';
   templateUrl: './product-card.html',
   styleUrl: './product-card.scss',
 })
-export class ProductCard {
+export class ProductCardComponent {
   @Input({ required: true }) product!: Producto;
+  @Output() viewDetail = new EventEmitter<Producto>();
 
-  protected readonly formattedPrice = computed(() => {
-    
-    const rawPrice = this.product.precio ?? (this.product as any).price;
-    const price = Number(rawPrice);
-    
-    if (isNaN(price)) {
-      console.warn('Precio inválido detectado:', this.product);
-      return 'S/. 0.00';
-    }
-    return `S/. ${price.toFixed(2)}`;
-  });
-
+  protected readonly formattedPrice = computed(() => `S/. ${this.productPrice.toFixed(2)}`);
   isAdded = false;
-
-  get isOutOfStock(): boolean {
-    return (this.product.stock ?? 0) <= 0;
-  }
-
-  get isLowStock(): boolean {
-    return (this.product.stock ?? 0) > 0 && (this.product.stock ?? 0) <= 5;
-  }
 
   constructor(private cartService: CartService) {}
 
+  private get productPrice(): number {
+    const rawPrice = this.product.precio ?? (this.product as any).price ?? 0;
+    const parsedPrice = Number(rawPrice);
+    if (Number.isNaN(parsedPrice)) {
+      console.warn('Precio inválido detectado:', this.product);
+      return 0;
+    }
+    return parsedPrice;
+  }
+
+  private get productId(): number | string | undefined {
+    return this.product.idProducto ?? (this.product as any).id;
+  }
+
+  private get stockAmount(): number {
+    return Number(this.product.stock ?? 0);
+  }
+
+  get isOutOfStock(): boolean {
+    return this.stockAmount <= 0;
+  }
+
+  get isLowStock(): boolean {
+    return this.stockAmount > 0 && this.stockAmount <= 5;
+  }
+
+  private getCartItems() {
+    return this.cartService.getCartItems();
+  }
+
+  private findCartItem() {
+    const id = this.productId;
+    return this.getCartItems().find(
+      item => (item as any).id === id || (item as any).product?.idProducto === id
+    );
+  }
+
+  isProductInCart = computed(() => Boolean(this.findCartItem()));
+
+  productQuantityInCart = computed(() => this.findCartItem()?.quantity || 0);
+
   onAddToCart(): void {
-    if (this.isOutOfStock) return;
+    if (this.isOutOfStock) {
+      return;
+    }
+
     this.cartService.addToCart(this.product);
     this.isAdded = true;
+
     setTimeout(() => {
       this.isAdded = false;
     }, 1500);
   }
 
-  isProductInCart = computed(() => {
-    const cartItems = this.cartService.getCartItems();
-    const id = this.product.idProducto || (this.product as any).id;
-    return cartItems.some(item => (item as any).id === id || item.product.idProducto === id);
-  });
+  onViewDetail(): void {
+    this.viewDetail.emit(this.product);
+  }
 
-  productQuantityInCart = computed(() => {
-    const cartItems = this.cartService.getCartItems();
-    const id = this.product.idProducto || (this.product as any).id;
-    const item = cartItems.find(cartItem => (cartItem as any).id === id || cartItem.product.idProducto === id);
-    return (item as any)?.quantity || 0;
-  });
-
-  getImageUrl(): string {
-    const image = this.product.imagen || (this.product as any).image;
+  private normalizeImageUrl(image?: string): string {
     if (!image) {
       return 'assets/pure-inka-logo.png';
     }
@@ -79,6 +96,10 @@ export class ProductCard {
     }
 
     return `assets/${image}`;
+  }
+
+  getImageUrl(): string {
+    return this.normalizeImageUrl(this.product.imagen ?? (this.product as any).image);
   }
 
   onImageError(event: any): void {

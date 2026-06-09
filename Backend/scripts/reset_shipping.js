@@ -17,12 +17,12 @@ async function resetShipping() {
 
     for (const [nombre, costo] of methods) {
       await pool.query('INSERT INTO TipoEntrega (nombre, costo) VALUES (?, ?)', [nombre, costo]);
-      console.log(`✅ Añadido: ${nombre}`);
+      console.log(`Añadido: ${nombre}`);
     }
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error('Error:', error);
     process.exit(1);
   }
 }

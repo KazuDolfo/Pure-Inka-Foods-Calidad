@@ -9,15 +9,20 @@ CREATE TABLE categoria (
 
 CREATE TABLE cliente (
     idCliente INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    correo VARCHAR(255) UNIQUE NOT NULL,
+    nombre VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) NOT NULL UNIQUE,
     telefono VARCHAR(20),
     contrasenaHash VARCHAR(255) NOT NULL,
     rol VARCHAR(20) DEFAULT 'cliente',
     fechaRegistro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     codigoRecuperacion VARCHAR(10) NULL,
     expiracionCodigo DATETIME NULL,
-    activo TINYINT(1) DEFAULT 1
+    activo TINYINT(1) DEFAULT 0,
+    intentosFallidos INT DEFAULT 0,
+    bloqueadoHasta DATETIME NULL,
+    codigoVerificacion VARCHAR(6) NULL,
+    INDEX (correo),
+    INDEX (telefono)
 );
 
 CREATE TABLE producto (
@@ -29,8 +34,11 @@ CREATE TABLE producto (
     stock INT NOT NULL DEFAULT 0,
     imagen VARCHAR(255),
     activo TINYINT(1) DEFAULT 1,
-    FOREIGN KEY (idCategoria) REFERENCES categoria (idCategoria)
+    FOREIGN KEY (idCategoria) REFERENCES categoria (idCategoria),
+    INDEX (nombre),
+    INDEX (idCategoria)
 );
+
 
 CREATE TABLE carrito (
     idCarrito INT AUTO_INCREMENT PRIMARY KEY,
@@ -79,6 +87,17 @@ CREATE TABLE metodopago (
     activo TINYINT(1) DEFAULT 1
 );
 
+CREATE TABLE cupon (
+    idCupon INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(50) NOT NULL UNIQUE,
+    tipo VARCHAR(20) NOT NULL,
+    valor DECIMAL(10, 2) NOT NULL,
+    fechaExpiracion DATETIME NOT NULL,
+    activo TINYINT(1) DEFAULT 1,
+    limiteUso INT DEFAULT 9999,
+    vecesUsado INT DEFAULT 0
+);
+
 CREATE TABLE pedido (
     idPedido INT AUTO_INCREMENT PRIMARY KEY,
     idCliente INT NOT NULL,
@@ -90,10 +109,16 @@ CREATE TABLE pedido (
     costoEnvio DECIMAL(10, 2) NOT NULL,
     totalPagar DECIMAL(10, 2) NOT NULL,
     metodoPago VARCHAR(50),
+    tipoComprobante VARCHAR(20) DEFAULT 'BOLETA',
+    ruc VARCHAR(11),
+    razonSocial VARCHAR(255),
     comprobantePago VARCHAR(255),
+    idCupon INT NULL,
+    descuento DECIMAL(10, 2) DEFAULT 0.00,
     FOREIGN KEY (idCliente) REFERENCES cliente (idCliente),
     FOREIGN KEY (idTipoEntrega) REFERENCES tipoentrega (idTipoEntrega),
-    FOREIGN KEY (idDireccion) REFERENCES direccioncliente (idDireccion)
+    FOREIGN KEY (idDireccion) REFERENCES direccioncliente (idDireccion),
+    FOREIGN KEY (idCupon) REFERENCES cupon(idCupon)
 );
 
 CREATE TABLE detallepedido (
@@ -128,4 +153,38 @@ CREATE TABLE comprobantepago (
     monto DECIMAL(10, 2) NOT NULL,
     rutaPDF VARCHAR(255) NOT NULL,
     FOREIGN KEY (idPago) REFERENCES pago (idPago)
+);
+
+CREATE TABLE resena (
+    idResena INT AUTO_INCREMENT PRIMARY KEY,
+    idProducto INT NOT NULL,
+    idCliente INT NOT NULL,
+    calificacion INT NOT NULL CHECK (calificacion BETWEEN 1 AND 5),
+    comentario TEXT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (idProducto) REFERENCES producto (idProducto) ON DELETE CASCADE,
+    FOREIGN KEY (idCliente) REFERENCES cliente (idCliente) ON DELETE CASCADE,
+    CONSTRAINT unique_producto_cliente UNIQUE (idProducto, idCliente)
+);
+
+CREATE TABLE cupon_cliente (
+    idCupon INT NOT NULL,
+    idCliente INT NOT NULL,
+    fechaUso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (idCupon, idCliente),
+    FOREIGN KEY (idCupon) REFERENCES cupon(idCupon) ON DELETE CASCADE,
+    FOREIGN KEY (idCliente) REFERENCES cliente (idCliente) ON DELETE CASCADE
+);
+
+CREATE TABLE ticket (
+    idTicket INT AUTO_INCREMENT PRIMARY KEY,
+    idCliente INT NOT NULL,
+    asunto VARCHAR(255) NOT NULL,
+    descripcion TEXT NOT NULL,
+    categoria VARCHAR(100) NOT NULL,
+    estado VARCHAR(50) DEFAULT 'ABIERTO',
+    respuesta TEXT NULL,
+    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fechaActualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (idCliente) REFERENCES cliente(idCliente) ON DELETE CASCADE
 );

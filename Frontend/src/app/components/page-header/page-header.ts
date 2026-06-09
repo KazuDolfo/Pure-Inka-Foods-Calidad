@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './page-header.html',
   styleUrl: './page-header.scss'
 })
-export class PageHeader {
-  @Input() title: string = '';
-  @Input() subtitle: string = '';
+export class PageHeaderComponent {
+  @Input() title = '';
+  @Input() subtitle = '';
 }

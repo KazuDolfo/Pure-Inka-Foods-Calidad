@@ -7,7 +7,8 @@ exports.generateInvoice = async (order, details, customer) => {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 50 });
-      const fileName = `boleta-${order.idPedido}-${Date.now()}.pdf`;
+      const typeLabel = (order.tipoComprobante || 'BOLETA').toUpperCase();
+      const fileName = `${typeLabel.toLowerCase()}-${order.idPedido}-${Date.now()}.pdf`;
       const filePath = path.join(__dirname, '../../public/uploads/invoices', fileName);
       const stream = fs.createWriteStream(filePath);
 
@@ -31,16 +32,24 @@ exports.generateInvoice = async (order, details, customer) => {
          .stroke();
 
       
+      const series = typeLabel === 'FACTURA' ? 'F001' : 'B001';
       doc.fillColor('#000000')
          .fontSize(14)
-         .text(`BOLETA ELECTRÓNICA: B001-${order.idPedido.toString().padStart(6, '0')}`, 50, 115);
+         .text(`${typeLabel} ELECTRÓNICA: ${series}-${order.idPedido.toString().padStart(6, '0')}`, 50, 115);
 
       
       doc.fontSize(10)
-         .text(`Fecha: ${new Date(order.fecha).toLocaleDateString()}`, 50, 140)
-         .text(`Cliente: ${customer.nombre}`, 50, 155)
-         .text(`Email: ${customer.correo}`, 50, 170)
-         .text(`Teléfono: ${customer.telefono || 'N/A'}`, 50, 185)
+         .text(`Fecha: ${new Date(order.fecha).toLocaleDateString()}`, 50, 140);
+
+      if (typeLabel === 'FACTURA') {
+        doc.text(`Razón Social: ${order.razonSocial || 'N/A'}`, 50, 155)
+           .text(`RUC: ${order.ruc || 'N/A'}`, 50, 170);
+      } else {
+        doc.text(`Cliente: ${customer.nombre}`, 50, 155)
+           .text(`Email: ${customer.correo}`, 50, 170);
+      }
+      
+      doc.text(`Teléfono: ${customer.telefono || 'N/A'}`, 50, 185)
          .moveDown();
 
       

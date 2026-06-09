@@ -30,9 +30,9 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     datasets: [{
       data: [],
       label: 'Ventas (S/.)',
-      backgroundColor: 'rgba(78, 115, 223, 0.1)',
-      borderColor: 'rgba(78, 115, 223, 1)',
-      pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+      backgroundColor: 'rgba(40, 167, 69, 0.1)',
+      borderColor: 'rgba(40, 167, 69, 1)',
+      pointBackgroundColor: 'rgba(40, 167, 69, 1)',
       fill: 'origin'
     }]
   };
@@ -50,6 +50,19 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     }]
   };
 
+  public paymentChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    plugins: { legend: { position: 'bottom' } }
+  };
+  public paymentChartType: ChartType = 'pie';
+  public paymentChartData: ChartData<'pie'> = {
+    labels: [],
+    datasets: [{
+      data: [],
+      backgroundColor: ['#4e73df', '#1cc88a', '#f6c23e']
+    }]
+  };
+
   public topProductsChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     indexAxis: 'y',
@@ -62,21 +75,8 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     datasets: [{
       data: [],
       label: 'Unidades Vendidas',
-      backgroundColor: '#4e73df',
-      borderColor: '#4e73df'
-    }]
-  };
-
-  public categoryChartOptions: ChartConfiguration['options'] = {
-    responsive: true,
-    plugins: { legend: { position: 'right' } }
-  };
-  public categoryChartType: ChartType = 'pie';
-  public categoryChartData: ChartData<'pie'> = {
-    labels: [],
-    datasets: [{
-      data: [],
-      backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
+      backgroundColor: '#28a745',
+      borderColor: '#28a745'
     }]
   };
 
@@ -84,7 +84,6 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadStats();
-    
     this.refreshInterval = setInterval(() => this.loadStats(false), 300000);
   }
 
@@ -103,32 +102,34 @@ export class AdminHomeComponent implements OnInit, OnDestroy {
     
     this.adminService.getDashboardStats(this.selectedPeriod).subscribe({
       next: (data) => {
+        // El servicio ya devuelve directamente el objeto 'data' del backend
         this.stats = data;
+        const charts = data.charts;
 
-        if (data.salesChart) {
-          this.salesChartData.labels = data.salesChart.labels;
-          this.salesChartData.datasets[0].data = data.salesChart.data;
+        if (charts && charts.sales) {
+          this.salesChartData.labels = charts.sales.labels;
+          this.salesChartData.datasets[0].data = charts.sales.data;
           this.salesChartData = { ...this.salesChartData };
         }
 
-        if (data.statusChart) {
-          this.statusChartData.labels = data.statusChart.labels;
-          this.statusChartData.datasets[0].data = data.statusChart.data;
+        if (charts && charts.status) {
+          this.statusChartData.labels = charts.status.labels;
+          this.statusChartData.datasets[0].data = charts.status.data;
           this.statusChartData = { ...this.statusChartData };
         }
 
-        if (data.topProductsChart) {
-          this.topProductsChartData.labels = data.topProductsChart.labels;
-          this.topProductsChartData.datasets[0].data = data.topProductsChart.data;
+        if (charts && charts.payments) {
+          this.paymentChartData.labels = charts.payments.labels;
+          this.paymentChartData.datasets[0].data = charts.payments.data;
+          this.paymentChartData = { ...this.paymentChartData };
+        }
+
+        if (charts && charts.topProducts) {
+          this.topProductsChartData.labels = charts.topProducts.labels;
+          this.topProductsChartData.datasets[0].data = charts.topProducts.data;
           this.topProductsChartData = { ...this.topProductsChartData };
         }
-
-        if (data.categoryChart) {
-          this.categoryChartData.labels = data.categoryChart.labels;
-          this.categoryChartData.datasets[0].data = data.categoryChart.data;
-          this.categoryChartData = { ...this.categoryChartData };
-        }
-
+        
         this.loading = false;
       },
       error: (err) => {

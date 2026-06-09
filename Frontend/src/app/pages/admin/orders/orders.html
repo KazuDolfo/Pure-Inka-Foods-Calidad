@@ -66,12 +66,16 @@
                             </td>
                             <td class="text-center">
                                 <div class="d-flex flex-column gap-1 align-items-center">
-                                    <button *ngIf="o.comprobantePago || o.comprobante_pago" class="btn btn-xs btn-info text-white shadow-sm"
+                                    <!-- Imagen subida por el usuario (Yape/Plin) -->
+                                    <button *ngIf="(o.comprobantePago || o.comprobante_pago) && !(o.comprobantePago || o.comprobante_pago).toLowerCase().endsWith('.pdf')" 
+                                        class="btn btn-xs btn-info text-white shadow-sm"
                                         (click)="viewImage(o.comprobantePago || o.comprobante_pago)">
                                         <i class="bi bi-image me-1"></i> Imagen
                                     </button>
                                     
-                                    <a *ngIf="o.boleta_url" [href]="'http://localhost:5000' + o.boleta_url" 
+                                    <!-- Boleta PDF generada por el sistema -->
+                                    <a *ngIf="o.boleta_url || (o.comprobantePago && o.comprobantePago.toLowerCase().endsWith('.pdf'))" 
+                                       [href]="'http://localhost:5000' + (o.boleta_url || o.comprobantePago)" 
                                        target="_blank" class="btn btn-xs btn-danger shadow-sm">
                                         <i class="bi bi-file-earmark-pdf me-1"></i> Boleta
                                     </a>

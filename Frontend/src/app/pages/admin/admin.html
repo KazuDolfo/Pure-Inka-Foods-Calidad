@@ -49,6 +49,20 @@
             <span>Pagos</span>
           </a>
         </li>
+        <li>
+          <a [routerLink]="['/admin/coupons']" class="nav-link text-white d-flex align-items-center" 
+             routerLinkActive="active" (click)="closeSidebarOnMobile()">
+            <i class="bi bi-tags me-3 fs-5"></i>
+            <span>Cupones</span>
+          </a>
+        </li>
+        <li>
+          <a [routerLink]="['/admin/tickets']" class="nav-link text-white d-flex align-items-center" 
+             routerLinkActive="active" (click)="closeSidebarOnMobile()">
+            <i class="bi bi-headset me-3 fs-5"></i>
+            <span>Tickets</span>
+          </a>
+        </li>
       </ul>
       
       <hr class="opacity-25 my-4">

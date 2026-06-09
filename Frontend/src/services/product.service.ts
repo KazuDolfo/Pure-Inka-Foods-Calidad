@@ -22,13 +22,14 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  async loadProducts(page: number = 1, limit: number = 12, term?: string, categoryId?: number | null): Promise<void> {
+  async loadProducts(page: number = 1, limit: number = 12, term?: string, categoryId?: number | null, sort: string = 'newest'): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
 
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('limit', limit.toString());
+      .set('limit', limit.toString())
+      .set('sort', sort);
     
     if (term) params = params.set('search', term);
     if (categoryId) params = params.set('category', categoryId.toString());
@@ -88,6 +89,10 @@ export class ProductService {
     return this.http.get<ApiResponse<Producto>>(`${this.API_URL}/${id}`);
   }
 
+  getRelatedProducts(id: number): Observable<ApiResponse<Producto[]>> {
+    return this.http.get<ApiResponse<Producto[]>>(`${this.API_URL}/${id}/related`);
+  }
+
   
   getProducts = () => this.products();
   getCategories = () => this.categories();
@@ -102,4 +107,12 @@ export class ProductService {
   
   isLoading = () => this.loading();
   getError = () => this.error();
+
+  getProductReviews(idProducto: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/reviews/product/${idProducto}`);
+  }
+
+  addReview(reviewData: { idProducto: number, calificacion: number, comentario: string }): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${environment.apiUrl}/reviews`, reviewData);
+  }
 }

@@ -15,7 +15,7 @@ const dbConfig = {
 
 
 if (dbConfig.database !== 'PureInkaFoodsDB') {
-  console.error('❌ Error: El backend solo está configurado para ejecutarse con la base de datos "PureInkaFoodsDB".');
+  console.error('Error: El backend solo está configurado para ejecutarse con la base de datos "PureInkaFoodsDB".');
   process.exit(1);
 }
 
@@ -25,7 +25,7 @@ const pool = mysql.createPool(dbConfig);
 async function checkDatabase() {
   try {
     const connection = await pool.getConnection();
-    console.log('✅ Conexión a la base de datos establecida correctamente.');
+    console.log('Conexión a la base de datos establecida correctamente.');
     
     
     const [dbResult] = await connection.query('SELECT DATABASE() as db');
@@ -38,12 +38,12 @@ async function checkDatabase() {
     
     const [tables] = await connection.query('SHOW TABLES LIKE "Cliente"');
     if (tables.length === 0) {
-      console.warn('⚠️ Advertencia: La tabla "Cliente" no existe. Asegúrate de ejecutar el script SQL.');
+      console.warn('Advertencia: La tabla "Cliente" no existe. Asegúrate de ejecutar el script SQL.');
     }
 
     connection.release();
   } catch (error) {
-    console.error('❌ Error al conectar con la base de datos:', error.message);
+    console.error('Error al conectar con la base de datos:', error.message);
     process.exit(1);
   }
 }

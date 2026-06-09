@@ -76,3 +76,36 @@ ON DUPLICATE KEY UPDATE
 nombre = VALUES(nombre),
 costo = VALUES(costo);
 
+INSERT INTO metodopago (idMetodoPago, nombre, descripcion, instrucciones, imagen_qr, activo) VALUES
+(1, 'Tarjeta de Crédito/Débito (Stripe)', 'Pago seguro con tarjetas Visa, Mastercard, AMEX.', 'Ingrese los datos de su tarjeta en la pasarela segura de Stripe.', NULL, 1),
+(2, 'Yape', 'Pago rápido mediante código QR o número de celular.', 'Escanee el código QR y adjunte la captura de pantalla de su comprobante.', 'yape-logo.png', 1),
+(3, 'Plin', 'Pago rápido mediante código QR o número de celular.', 'Escanee el código QR y adjunte la captura de pantalla de su comprobante.', 'plin-logo.png', 1),
+(4, 'Transferencia Bancaria', 'Depósito directo en nuestras cuentas BCP o BBVA.', 'Realice la transferencia a la cuenta 191-XXXXXXXX-X-XX y suba el voucher.', NULL, 1)
+ON DUPLICATE KEY UPDATE 
+nombre = VALUES(nombre),
+descripcion = VALUES(descripcion),
+instrucciones = VALUES(instrucciones),
+imagen_qr = VALUES(imagen_qr),
+activo = VALUES(activo);
+
+-- ==========================================
+-- NUEVOS DATOS: CUPONES, RESEÑAS Y TICKETS
+-- ==========================================
+
+INSERT INTO cupon (codigo, tipo, valor, fechaExpiracion, limiteUso, vecesUsado) VALUES 
+('INKA10', 'porcentaje', 10.00, '2026-12-31 23:59:59', 100, 0),
+('INKA20', 'porcentaje', 20.00, '2026-12-31 23:59:59', 50, 0),
+('BIENVENIDA', 'fijo', 5.00, '2026-12-31 23:59:59', 500, 0);
+
+INSERT INTO resena (idProducto, idCliente, calificacion, comentario) VALUES 
+(1, 1, 5, 'Excelente producto, la moringa me da mucha energía.'),
+(2, 3, 4, 'Muy buena calidad, aunque el sabor es un poco fuerte.'),
+(4, 4, 5, 'La maca me ayuda mucho con el estrés diario. Recomendado.'),
+(8, 5, 5, 'La mejor quinua que he probado, muy limpia y de buen tamaño.'),
+(10, 6, 4, 'Buen aceite, lo uso para mis ensaladas.');
+
+INSERT INTO ticket (idCliente, asunto, descripcion, categoria, estado, respuesta) VALUES 
+(1, 'Consulta sobre envío', '¿Hacen envíos a provincia fuera de Lima?', 'Pedidos / Envío', 'RESPONDIDO', 'Sí, realizamos envíos a todo el Perú mediante Olva Courier.'),
+(3, 'Error en el pago', 'Intenté pagar con Yape pero me salió error.', 'Facturación', 'CERRADO', 'El problema fue resuelto, puede intentar nuevamente.'),
+(1, 'Sugerencia de producto', 'Me gustaría que vendan cacao en polvo.', 'Otros', 'ABIERTO', NULL);
+

@@ -68,9 +68,16 @@ export class Orders implements OnInit {
     });
   }
 
-  viewImage(imageName: string) {
-    if (!imageName) return;
-    this.selectedImage = `http://localhost:5000/uploads/${imageName}`;
+  viewImage(path: string) {
+    if (!path) return;
+    
+    let url = path.startsWith('http') ? path : `http://localhost:5000${path.startsWith('/') ? '' : '/'}${path}`;
+    
+    if (path.toLowerCase().endsWith('.pdf')) {
+      window.open(url, '_blank');
+    } else {
+      this.selectedImage = url;
+    }
   }
 
   closeImageModal() {

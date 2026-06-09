@@ -1,5 +1,6 @@
 
 process.env.JWT_SECRET = 'test_secret';
+process.env.STRIPE_SECRET_KEY = 'sk_test_dummy';
 
 jest.mock('stripe', () => {
   return jest.fn().mockImplementation(() => ({
@@ -9,19 +10,19 @@ jest.mock('stripe', () => {
   }));
 });
 
-const { login } = require('../src/controllers/auth.controller');
-const { getCart, syncCart } = require('../src/controllers/cart.controller');
-const { getAllProducts } = require('../src/controllers/product.controller');
-const { getAddresses, addAddress } = require('../src/controllers/user.controller');
-const { getAllShippingMethods } = require('../src/controllers/shipping.controller');
-const { createPaymentIntent } = require('../src/controllers/payment.controller');
-const { createOrder } = require('../src/controllers/order.controller');
+const { login } = require('../../src/controllers/auth.controller');
+const { getCart, syncCart } = require('../../src/controllers/cart.controller');
+const { getAllProducts } = require('../../src/controllers/product.controller');
+const { getAddresses, addAddress } = require('../../src/controllers/user.controller');
+const { getAllShippingMethods } = require('../../src/controllers/shipping.controller');
+const { createPaymentIntent } = require('../../src/controllers/payment.controller');
+const { createOrder } = require('../../src/controllers/order.controller');
 
-const pool = require('../src/config/db');
+const pool = require('../../src/config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-jest.mock('../src/config/db', () => ({
+jest.mock('../../src/config/db', () => ({
   query: jest.fn(),
   getConnection: jest.fn()
 }));
@@ -46,13 +47,13 @@ describe('Pruebas Unitarias del Ciclo de Venta Online (Mapeo de Imágenes)', () 
     await login(req, mockRes);
     
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ success: true, message: 'Login exitoso' }));
-    console.log('✅ Resultado Imagen 1: Autenticación exitosa (JWT generado).');
+    console.log('Resultado Imagen 1: Autenticación exitosa (JWT generado).');
   });
 
   // IMAGEN 2: Añadir al carrito
   test('Imagen 2: Sincronizar Carrito - Debería guardar items en la BD', async () => {
     const req = { user: { id: 1 }, body: { items: [{ id: 10, quantity: 2 }] } };
-    const mockConn = { beginTransaction: jest.fn(), query: jest.fn(), commit: jest.fn(), release: jest.fn() };
+    const mockConn = { beginTransaction: jest.fn(), query: jest.fn(), commit: jest.fn(), rollback: jest.fn(), release: jest.fn() };
     pool.getConnection.mockResolvedValue(mockConn);
     mockConn.query.mockResolvedValueOnce([[ { idCarrito: 5 } ]]); // Select cart
 
@@ -60,7 +61,7 @@ describe('Pruebas Unitarias del Ciclo de Venta Online (Mapeo de Imágenes)', () 
 
     expect(mockConn.commit).toHaveBeenCalled();
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
-    console.log('✅ Resultado Imagen 2: Ítems sincronizados con la BD del carrito.');
+    console.log('Resultado Imagen 2: Ítems sincronizados con la BD del carrito.');
   });
 
   // IMAGEN 3: Visualizar Carrito
@@ -75,7 +76,7 @@ describe('Pruebas Unitarias del Ciclo de Venta Online (Mapeo de Imágenes)', () 
         success: true, 
         data: expect.arrayContaining([expect.objectContaining({ nombre: 'Yacon Syrup' })]) 
     }));
-    console.log('✅ Resultado Imagen 3: Carrito visualizado correctamente con Yacon Syrup.');
+    console.log(' Resultado Imagen 3: Carrito visualizado correctamente con Yacon Syrup.');
   });
 
   // IMAGEN 4: Catálogo y Filtros
@@ -87,7 +88,7 @@ describe('Pruebas Unitarias del Ciclo de Venta Online (Mapeo de Imágenes)', () 
 
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     expect(mockRes.json.mock.calls[0][0].data[0]).toHaveProperty('id_categoria', 1);
-    console.log('✅ Resultado Imagen 4: Catálogo filtrado por categoría exitosamente.');
+    console.log('Resultado Imagen 4: Catálogo filtrado por categoría exitosamente.');
   });
 
   // IMAGEN 5: Direcciones
@@ -98,7 +99,7 @@ describe('Pruebas Unitarias del Ciclo de Venta Online (Mapeo de Imágenes)', () 
     await getAddresses(req, mockRes);
 
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
-    console.log('✅ Resultado Imagen 5: Dirección de envío recuperada correctamente.');
+    console.log('Resultado Imagen 5: Dirección de envío recuperada correctamente.');
   });
 
   // IMAGEN 6: Métodos de Envío
@@ -110,7 +111,7 @@ describe('Pruebas Unitarias del Ciclo de Venta Online (Mapeo de Imágenes)', () 
 
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     expect(mockRes.json.mock.calls[0][0].data[0]).toHaveProperty('costo', 10.00);
-    console.log('✅ Resultado Imagen 6: Métodos de envío cargados con sus precios.');
+    console.log('Resultado Imagen 6: Métodos de envío cargados con sus precios.');
   });
 
   // IMAGEN 7: Métodos de Pago
@@ -125,7 +126,7 @@ describe('Pruebas Unitarias del Ciclo de Venta Online (Mapeo de Imágenes)', () 
         await createPaymentIntent(req, mockRes);
     } catch (e) {
         // En entorno de test sin .env de Stripe fallará, lo cual es correcto
-        console.log('⚠️ Imagen 7: Requiere STRIPE_SECRET_KEY para prueba real, validando lógica...');
+        console.log('Imagen 7: Requiere STRIPE_SECRET_KEY para prueba real, validando lógica...');
     }
   });
 
@@ -139,22 +140,27 @@ describe('Pruebas Unitarias del Ciclo de Venta Online (Mapeo de Imágenes)', () 
             subtotal: 20, costo_envio: 5, total: 25
         } 
     };
-    const mockConn = { beginTransaction: jest.fn(), query: jest.fn(), commit: jest.fn(), release: jest.fn() };
+    const mockConn = { beginTransaction: jest.fn(), query: jest.fn(), commit: jest.fn(), rollback: jest.fn(), release: jest.fn() };
     pool.getConnection.mockResolvedValue(mockConn);
-    mockConn.query.mockResolvedValueOnce([{ insertId: 99 }]); // Order ID
+    mockConn.query
+      .mockResolvedValueOnce([{ insertId: 99 }]) // Order insert
+      .mockResolvedValueOnce([[{ idMetodoPago: 1 }]]) // Fetch payment method id
+      .mockResolvedValueOnce([]) // Insert payment
+      .mockResolvedValueOnce([]) // Insert order details
+      .mockResolvedValueOnce([]); // Update stock
 
     await createOrder(req, mockRes);
 
     expect(mockConn.query).toHaveBeenCalledWith(expect.stringContaining('UPDATE producto SET stock = stock - ?'), [1, 10]);
     expect(mockConn.commit).toHaveBeenCalled();
-    console.log('✅ Resultado Imagen 8: Pedido creado y stock actualizado satisfactoriamente.');
+    console.log('Resultado Imagen 8: Pedido creado y stock actualizado satisfactoriamente.');
   });
 
   // IMAGEN 9: Comprobante PDF
   test('Imagen 9: Comprobante - El flujo PAGADO debe disparar la generación de PDF', async () => {
     // Esta lógica está dentro de createOrder cuando initialStatus === 'PAGADO'
     // Se valida mediante la integración de los servicios de PDF.
-    console.log('✅ Resultado Imagen 9: Lógica de generación de comprobante validada en flujo de pago.');
+    console.log('Resultado Imagen 9: Lógica de generación de comprobante validada en flujo de pago.');
   });
 
 });

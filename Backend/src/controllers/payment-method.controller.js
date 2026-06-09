@@ -1,72 +1,81 @@
 const pool = require('../config/db');
+const { sendSuccess, handleError, buildUpdateQuery } = require('../utils/controller-helpers');
 
+const PAYMENT_METHOD_SELECT_QUERY = 'SELECT *, idMetodoPago as id_metodo FROM MetodoPago';
+
+function getQrImageFilename(req) {
+  return req.file ? req.file.filename : null;
+}
+
+function mapMethodData(body, qrImage) {
+  return {
+    nombre: body.nombre,
+    descripcion: body.descripcion,
+    instrucciones: body.instrucciones,
+    activo: body.activo ? 1 : 0,
+    imagen_qr: qrImage,
+  };
+}
 
 exports.getAllMethods = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT *, idMetodoPago as id_metodo FROM MetodoPago');
-    res.json({ success: true, data: rows });
+    const [rows] = await pool.query(PAYMENT_METHOD_SELECT_QUERY);
+    return sendSuccess(res, { data: rows });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al obtener métodos' });
+    return handleError(res, error, 'Error al obtener métodos', 'paymentMethod.getAllMethods');
   }
 };
-
 
 exports.getActiveMethods = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT *, idMetodoPago as id_metodo FROM MetodoPago WHERE activo = 1');
-    res.json({ success: true, data: rows });
+    const [rows] = await pool.query(`${PAYMENT_METHOD_SELECT_QUERY} WHERE activo = 1`);
+    return sendSuccess(res, { data: rows });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al obtener métodos activos' });
+    return handleError(res, error, 'Error al obtener métodos activos', 'paymentMethod.getActiveMethods');
   }
 };
-
 
 exports.createMethod = async (req, res) => {
   try {
-    const { nombre, descripcion, instrucciones, activo } = req.body;
-    const imagen_qr = req.file ? req.file.filename : null;
+    const qrImage = getQrImageFilename(req);
+    const methodData = mapMethodData(req.body, qrImage);
+
     const [result] = await pool.query(
       'INSERT INTO MetodoPago (nombre, descripcion, instrucciones, activo, imagen_qr) VALUES (?, ?, ?, ?, ?)',
-      [nombre, descripcion, instrucciones, activo ? 1 : 0, imagen_qr]
+      [methodData.nombre, methodData.descripcion, methodData.instrucciones, methodData.activo, methodData.imagen_qr]
     );
-    res.status(201).json({ success: true, data: { id_metodo: result.insertId } });
+
+    return sendSuccess(res, { data: { id_metodo: result.insertId } }, 201);
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al crear método' });
+    return handleError(res, error, 'Error al crear método', 'paymentMethod.createMethod');
   }
 };
-
 
 exports.updateMethod = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { nombre, descripcion, instrucciones, activo } = req.body;
-    const imagen_qr = req.file ? req.file.filename : null;
+    const methodId = req.params.id;
+    const qrImage = getQrImageFilename(req);
+    const methodData = mapMethodData(req.body, qrImage);
 
-    let query = 'UPDATE MetodoPago SET nombre = ?, descripcion = ?, instrucciones = ?, activo = ?';
-    const params = [nombre, descripcion, instrucciones, activo ? 1 : 0];
+    const { query, params } = buildUpdateQuery(
+      'UPDATE MetodoPago SET nombre = ?, descripcion = ?, instrucciones = ?, activo = ?',
+      [methodData.nombre, methodData.descripcion, methodData.instrucciones, methodData.activo],
+      [{ column: 'imagen_qr', value: methodData.imagen_qr }]
+    );
 
-    if (imagen_qr) {
-      query += ', imagen_qr = ?';
-      params.push(imagen_qr);
-    }
-
-    query += ' WHERE idMetodoPago = ?';
-    params.push(id);
-
-    await pool.query(query, params);
-    res.json({ success: true, message: 'Método actualizado' });
+    await pool.query(`${query} WHERE idMetodoPago = ?`, [...params, methodId]);
+    return sendSuccess(res, { message: 'Método actualizado' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al actualizar método' });
+    return handleError(res, error, 'Error al actualizar método', 'paymentMethod.updateMethod');
   }
 };
 
-
 exports.deleteMethod = async (req, res) => {
   try {
-    const { id } = req.params;
-    await pool.query('DELETE FROM MetodoPago WHERE idMetodoPago = ?', [id]);
-    res.json({ success: true, message: 'Método eliminado' });
+    const methodId = req.params.id;
+    await pool.query('DELETE FROM MetodoPago WHERE idMetodoPago = ?', [methodId]);
+    return sendSuccess(res, { message: 'Método eliminado' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al eliminar método' });
+    return handleError(res, error, 'Error al eliminar método', 'paymentMethod.deleteMethod');
   }
 };

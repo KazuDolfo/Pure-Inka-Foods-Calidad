@@ -1,16 +1,16 @@
 import { Component, signal } from '@angular/core';
 
 import { Router, RouterOutlet } from '@angular/router';
-import { TopBar } from './components/top-bar/top-bar';
-import { Header } from './components/header/header';
+import { TopBarComponent } from './components/top-bar/top-bar';
+import { HeaderComponent } from './components/header/header';
 import { FooterComponent } from './components/footer/footer';
 
 @Component({
   selector: 'app-root',
   imports: [
     RouterOutlet,
-    TopBar,
-    Header,
+    TopBarComponent,
+    HeaderComponent,
     FooterComponent
   ],
   templateUrl: './app.html',

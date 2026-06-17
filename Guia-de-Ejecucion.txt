@@ -1,37 +1,11 @@
+Guía de ejecución para Pure Inka Foods
 
-   GUÍA DE EJECUCIÓN TÉCNICA - PURE INKA FOODS
-   -------------------------------------------
+Para comenzar necesitas tener instalado Node.js en la versión 18 o superior y tener MySQL Server ejecutándose. También asegúrate de usar un navegador moderno como Chrome o Firefox.
 
-   [ 1. PRE-REQUISITOS ]
-   * Node.js v18.0 o superior instalado.
-   * MySQL Server v8.0 en ejecución.
-   * Navegador moderno (Brave, Firefox, Chrome).
+Primero debes configurar la base de datos ejecutando los archivos SQL en orden. Empieza con el archivo DDL-3.sql para la estructura de la base de datos y luego ejecuta DML-v1-InkaFood.sql para cargar los datos del catálogo y las categorías.
 
+Para iniciar el servidor backend ingresa a la carpeta Backend e instala las dependencias usando el comando npm install. Luego debes configurar el entorno modificando el archivo env colocando tu contraseña de base de datos en la variable DB_PASS y una clave secreta en JWT_SECRET. Finalmente inicia el servidor con el comando npm run dev.
 
-   [ 2. PUESTA EN MARCHA DE BASE DE DATOS ]
-   Ejecute los archivos SQL en este orden estricto:
-   
-   1. DDL-2.sql           (Estructura, Índices y Seguridad)
-   2. DML-v1-InkaFood.sql (Datos de catálogo y categorías)
+Para iniciar la web frontend ingresa a la carpeta Frontend e instala las dependencias con el comando npm install. Después inicia la aplicación con npm start. Cuando termine de cargar podrás acceder ingresando a la ruta localhost en el puerto 4200 de tu navegador.
 
-
-   [ 3. INICIO DEL SERVIDOR (BACKEND) ]
-   1. Ingrese a la carpeta 'Backend'.
-   2. Ejecute: npm install
-   3. Configure el archivo '.env':
-      - DB_PASS = [Su contraseña de MySQL]
-      - JWT_SECRET = [Cualquier clave secreta]
-   4. Inicie el servidor: npm run dev
-
-
-   [ 4. INICIO DE LA WEB (FRONTEND) ]
-   1. Ingrese a la carpeta 'Frontend'.
-   2. Ejecute: npm install
-   3. Inicie la aplicación: npm start
-   4. Acceda a: http://localhost:4200
-
-
-   [ 5. VALIDACIÓN DE CALIDAD ]
-   - Pruebas Backend : En /Backend ejecute 'npm test'
-   - Pruebas Frontend: En /Frontend ejecute 'ng test'
-   - Salud Sistema  : Visite http://localhost:5000/api/health
+Si deseas validar que el sistema funciona correctamente puedes correr npm test dentro del backend y ng test en el frontend. Para revisar el estado del sistema visita la ruta api/health en el puerto 5000 de tu localhost.

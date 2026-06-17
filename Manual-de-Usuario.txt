@@ -1,48 +1,15 @@
+Manual de Usuario para Pure Inka Foods
 
-   MANUAL DE USUARIO - PURE INKA FOODS (GESTIÓN DE VENTAS)
-   -------------------------------------------------------
+Accesos de prueba
+Para ingresar con el rol de cliente puedes usar el correo berna@gmail.com con la contraseña sasasa. Si deseas ingresar como administrador utiliza el correo admin@pureinka.com con la clave Admin123.
 
-   [ 1. ACCESOS RÁPIDOS PARA PRUEBAS ]
-   
-   👤 ROL CLIENTE
-      - Correo: berna@gmail.com
-      - Clave : sasasa
+Nuevas funcionalidades y experiencia del cliente
+Durante el registro de una cuenta nueva el sistema ahora envía un código de seis dígitos que deberás ingresar para validar tu identidad de forma segura. Este código lo puedes revisar en la consola del backend.
+La exploración de la tienda ha sido mejorada. Ahora cuando ingresas a un producto puedes ver la descripción completa y el sistema te sugerirá automáticamente otros artículos similares que podrían interesarte.
+En el carrito de compras ahora se hace una validación en tiempo real del inventario disponible antes de confirmar el pago. También hemos incorporado nuevas opciones para que puedas pagar usando plataformas como Stripe o billeteras digitales como Yape y Plin con tan solo subir tu captura de pantalla del depósito.
+Desde la sección Mi Perfil puedes gestionar tus compras. Ahora tienes un historial desde donde es posible descargar los comprobantes de tus pedidos en formato PDF y cancelar las compras que aún no hayan empezado a ser procesadas.
 
-   🔑 ROL ADMINISTRADOR
-      - Correo: admin@pureinka.com
-      - Clave : Admin123
-
-
-   [ 2. EXPERIENCIA DEL CLIENTE ]
-
-   > Registro Seguro:
-     Al crear su cuenta, deberá ingresar un código de 6 dígitos.
-     (Busque el código en la consola del servidor Backend).
-
-   > Exploración Inteligente:
-     Navegue por la tienda. Al hacer clic en un producto, verá 
-     la descripción detallada y sugerencias automáticas de 
-     artículos similares.
-
-   > Carrito y Pago:
-     El sistema valida el stock antes de pagar. Puede elegir 
-     Stripe o Yape/Plin (subiendo su captura de pago).
-
-   > Gestión de Pedidos:
-     Desde "Mi Perfil" descargue sus comprobantes PDF o cancele 
-     pedidos que aún no hayan sido procesados.
-
-
-   [ 3. PANEL ADMINISTRATIVO ]
-
-   > Centro de Mando:
-     Monitoree ingresos reales, ticket promedio y usuarios nuevos.
-     Atienda las alertas rojas de "Inventario Crítico" de inmediato.
-
-   > Control Operativo:
-     Gestione productos, actualice stock y cambie el estado de 
-     los pedidos para informar al cliente.
-
-   > Seguridad y Auditoría:
-     El sistema bloquea cuentas tras 5 fallos. Revise la carpeta 
-     '/logs' para ver el historial detallado de errores.
+Nuevas funcionalidades y gestión del administrador
+El panel administrativo ahora cuenta con un centro de mando principal que te permite monitorear de forma dinámica los ingresos reales las ventas promedio y la cantidad de nuevos clientes registrados. También se incluyeron notificaciones visuales que te alertan de inmediato si algún producto alcanza un nivel de inventario crítico para que puedas reabastecerlo.
+En la parte operativa ahora tienes mayor control para gestionar todo el catálogo de productos. Puedes modificar la cantidad de stock disponible de manera más rápida y actualizar los diferentes estados por los que pasa un pedido lo cual sirve para notificar de los avances al cliente.
+Respecto a la seguridad y la auditoría el sistema ha sido reforzado para bloquear automáticamente las cuentas tras fallar cinco veces al intentar iniciar sesión. Si necesitas revisar detalles de los errores ahora puedes inspeccionar el historial detallado directamente desde la carpeta logs.
